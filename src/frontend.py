@@ -19,7 +19,7 @@ def init_bot():
     d.add_handler(CommandHandler('stat', commands.stat))
     d.add_handler(CommandHandler('log', commands.log))
     d.add_handler(CommandHandler('payment', commands.payment))
-    d.add_handler(CommandHandler('g', commands.g_add))
+    d.add_handler(CommandHandler('g_add', commands.g_add))
     d.add_handler(CommandHandler('add', commands.add))
     d.add_handler(CommandHandler('cancel', commands.cancel))
     d.add_handler(CommandHandler('pay', commands.pay))
