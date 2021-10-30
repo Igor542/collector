@@ -4,6 +4,7 @@ from TOKEN import TOKEN
 import logging
 import commands
 
+
 def init_bot():
     # Create bot
     updater = Updater(token=TOKEN, use_context=True)
@@ -15,10 +16,13 @@ def init_bot():
     # Run bot
     updater.start_polling()
 
+
 def main():
-    logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                     level=logging.INFO)
+    logging.basicConfig(format='%(asctime)s - %(name)s'
+                        '- %(levelname)s - %(message)s',
+                        level=logging.INFO)
     init_bot()
+
 
 if __name__ == '__main__':
     main()
