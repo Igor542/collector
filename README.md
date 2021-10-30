@@ -12,9 +12,9 @@ Command                                 | acK   | Description
 `/stat`                                 |       | Show current statistics.
 `/log [num_tx]`                         |       | Show last `num_tx` transactions. 0 for all. Default: 10.
 `/payment [a2a]`                        |       | Show payments with minimized transaction number, unless `a2a` modifier is used.
-`/[g]+ <value> [@user...] [comment]`    |       | Register `value` spending across all or mention users. `g` modifier to split between groups instead of users. <br> Ex: `/+ 10.3 @u1 @u2 Dinner`
+`/[g_]add <value> [@user...] [comment]` |       | Register `value` spending across all or mention users. `g_` modifier to split between groups instead of users. <br> Ex: `/add 10.3 @u1 @u2 Dinner`
 `/cancel <tx> [comment]`                | +     | Cancel `tx` transaction (see `/log`). <br> Ex: `/cancel 13 no surfing`
-`/= [@user1...] [comment]`              | +     | Register pay-off between all or mentioned users. <br> Ex: `/= @u1 @u2`
+`/pay [@user1...] [comment]`            | +     | Register pay-off between all or mentioned users. <br> Ex: `/pay @u1 @u2`
 `/reset`                                | +     | Full reset.
 
 ## Model
@@ -23,7 +23,7 @@ Command                                 | acK   | Description
 2. When groups are used, money are equally split between the groups first,
    and then equally split withing the groups between users. Example:
    - Users: u1, u2, (u3, u4). Users (3) and (4) form a group.
-   - If u1 calls `/+ 60`, then all users will owe u1 15.
-   - If u1 calls `/g+ 60`, then all u2 owes u1 20, and u3 and u4 owe u1 10.
+   - If u1 calls `/add 60`, then all users will owe u1 15.
+   - If u1 calls `/g_add 60`, then all u2 owes u1 20, and u3 and u4 owe u1 10.
 3. Cancel is treated as a transaction with inverse values and extended comment:
    `Cancel <tx>. <comment>`.
