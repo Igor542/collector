@@ -1,6 +1,6 @@
 import utils
 
-class StatusType(utils.ExtedableType):
+class StatusType(utils.ExtendableType):
     pass
 
 STATUS = StatusType()
@@ -21,19 +21,25 @@ def status_to_str(status):
 
 
 class Respond:
-    def init(self, status, obj=None, error=''):
-        assert(isinstance(status, int) && isinstance(error, str))
-        assert(implication(status == Status.OK, error == ''))
-        assert(implication(status != Status.OK, obj is None))
+    def __init__(self, status, **kwargs):
+        assert(isinstance(status, int))
+
         self.status = status
-        self.error = error
-        self.obj = obj
+        self.obj = None
+        self.error = ''
+
+        if status == STATUS.OK:
+            if 'obj' in kwargs:
+                self.obj = kwargs['obj']
+        else:
+            assert('error' in kwargs and isinstance(kwargs['error'], str))
+            self.error = kwargs['error']
 
     def __bool__(self):
-        return self.status == Status.OK
+        return self.status == STATUS.OK
 
     def __str__(self):
-        if self.status == Status.OK:
+        if self.status == STATUS.OK:
             return 'ok'
         error = self.error if self.error else status_to_str(self.status)
         return f'error({self.status}): "{error}"'
@@ -41,10 +47,10 @@ class Respond:
 
 class Ok(Respond):
     def __init__(self, obj=None):
-        super().__init__(self, STATUS.OK, obj)
+        super().__init__(STATUS.OK, obj=None)
 
 
 class Error(Respond):
     def __init__(self, status, error=''):
         assert(status != STATUS.OK)
-        super().__init__(self, status, error=error)
+        super().__init__(status, error=error)
