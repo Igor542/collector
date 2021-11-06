@@ -41,7 +41,7 @@ class TFinance:
         return Error(STATUS.UNIMPLEMENTED)
 
     def add(self, user_id, value, other_user_ids=None, comment=None):
-        tr_id = self.db.add_transaction(user_id, comment=comment).unpack()
+        tx_id = self.db.add_transaction(user_id, comment=comment).unpack()
 
         if not other_user_ids:
             other_user_ids = set(self.db.get_all_users().unpack())
@@ -53,7 +53,7 @@ class TFinance:
 
         for uid in other_user_ids:
             this_value = -value_per_user + (value if uid == user_id else 0)
-            self.db.add_count(tr_id, uid, this_value).unpack()
+            self.db.add_count(tx_id, uid, this_value).unpack()
 
         return Ok()
 
@@ -61,6 +61,9 @@ class TFinance:
         return Error(STATUS.UNIMPLEMENTED)
 
     def cancel(self, user_id, tx, comment=None):
+        if not self.db.has_transaction(tx):
+            return ERROR(STATUS.LOGIC_ERROR, f'transaction "{tx}" does not exist')
+
         return Error(STATUS.UNIMPLEMENTED)
 
     def pay(self, user_id, other_user_ids=None, comment=None):

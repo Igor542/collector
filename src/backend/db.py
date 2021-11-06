@@ -44,30 +44,17 @@ class DB:
             gid         INTEGER REFERENCES Groups(gid));
 
         CREATE TABLE IF NOT EXISTS Transactions (
-            tr_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            tx_id       INTEGER PRIMARY KEY AUTOINCREMENT,
             time        DATETIME NOT NULL,
             source      INTEGER NOT NULL REFERENCES Users(uid),
             comment     TEXT);
 
         CREATE TABLE IF NOT EXISTS Counts (
-            tr_id       INTEGER NOT NULL REFERENCES Transactions(tr_id),
+            tx_id       INTEGER NOT NULL REFERENCES Transactions(tx_id),
             user        INTEGER NOT NULL REFERENCES Users(uid),
             value       REAL);
         """
         self.cur.executescript(req)
-
-    def __add_user(self, uid):
-        req = f"""
-        INSERT INTO Users VALUES ({uid}, NULL)
-        """
-        self.cur.execute(req)
-
-    def __has_user(self, uid):
-        req = f"""
-        SELECT 1 FROM Users WHERE uid = {uid}
-        """
-        _ = self.cur.execute(req).fetchone()
-        return _ is not None
 
     # generic public API
 
@@ -75,7 +62,7 @@ class DB:
         if self.__ready == True:
             raise Exception(STATUS.RUNTIME_ERROR, f'db: try opening "{db_path}" while "{self.db_path}" already opened')
         self.db_path = db_path
-        self.__con = sqlite3.connect(db_path)
+        self.__con = sqlite3.connect(db_path, check_same_thread=False)
         self.__cur = self.__con.cursor()
         self.__ready = True
         self.__create_tables()
@@ -92,10 +79,14 @@ class DB:
     def ready(self):
         return self.__ready == True
 
-    # public API
+    # Users
 
     def has_user(self, uid):
-        return self.__has_user(uid)
+        req = f"""
+        SELECT 1 FROM Users WHERE uid = {uid}
+        """
+        _ = self.cur.execute(req).fetchone()
+        return _ is not None
 
     def get_all_users(self):
         req = f"""
@@ -106,8 +97,24 @@ class DB:
         return Ok(ret)
 
     def add_user(self, uid):
-        self.__add_user(uid)
+        req = f"""
+        INSERT INTO Users VALUES ({uid}, NULL)
+        """
+        self.cur.execute(req)
         return Ok()
+
+    # Transactions
+
+    def get_transaction(self, tx_id):
+        req = f"""
+        SELECT time, source, comment FROM Transactions WHERE tx_id = {tx_id}
+        """
+        _ = self.cur.execute(req).fetchone()
+        if _: return {'time':_[0], 'user':_[1], 'comment':_[2]}
+        return None
+
+    def has_transaction(self, tx_id):
+        return self.get_transaction(tx_id) is not None
 
     def add_transaction(self, source_id, comment=None):
         req = """
@@ -117,19 +124,21 @@ class DB:
         return Ok(self.cur.lastrowid)
 
     def get_last_transactions(self, num_tx, user_id=None):
-        order_by = 'tr_id' # time ?
+        order_by = 'tx_id' # time ?
         maybe_constrain = f'WHERE source = {user_id}' if user_id else ''
         req = f"""
-        SELECT tr_id FROM Transactions {maybe_constrain}
+        SELECT tx_id FROM Transactions {maybe_constrain}
         ORDER BY {order_by} DESC LIMIT {num_tx}
         """
         ret = self.cur.execute(req).fetchall()
         ret = [elem[0] for elem in ret]
         return Ok(ret)
 
-    def add_count(self, tr_id, user_id, value):
+    # Counts
+
+    def add_count(self, tx_id, user_id, value):
         req = f"""
-        INSERT INTO Counts VALUES ({tr_id}, {user_id}, {value})
+        INSERT INTO Counts VALUES ({tx_id}, {user_id}, {value})
         """
         self.cur.execute(req)
         return Ok()

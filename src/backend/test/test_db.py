@@ -67,6 +67,11 @@ def test2():
     s = d.get_last_transactions(20, user_id=2)
     assert(s.ok() and len(s.unpack()) == 11)
 
+    tx = d.add_transaction(2, 'super').unpack()
+    assert(d.has_transaction(tx))
+    tx_info = d.get_transaction(tx)
+    assert(tx_info['user'] == 2 and tx_info['comment'] == 'super')
+
     d.close()
 
 def test3():
