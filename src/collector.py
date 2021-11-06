@@ -1,14 +1,15 @@
 import logging
 
 import bot
+from backend import db, backend
 
 
 class Collector:
     def __init__(self):
-        # data_base = DB()
-        # data_base.open("collector_test")
-        # self.backend = TFinance(data_base)
-        self.bot = bot.bot()
+        data_base = DB()
+        data_base.open("collector_test")
+        backend = TFinance(data_base)
+        self.bot = bot.bot(backend)
 
     def run(self):
         self.bot.run()

@@ -5,7 +5,8 @@ import logging
 
 
 class bot:
-    def __init__(self):
+    def __init__(self, backend):
+        self.backend = backend
         # Create bot
         self.updater = Updater(token=TOKEN, use_context=True)
         d = self.updater.dispatcher
