@@ -124,14 +124,12 @@ class bot:
         if not respond.ok():
             self.__reply(update, respond.error)
         else:
-            print(respond)
             self.__reply(update, respond.unpack())
 
     @log_info
     def log(self, update, context):
         sender_id = self.__get_sender_id(update)
         words = update.message.text.split(' ')
-        print(words)
         num_tx = 0
         if len(words) > 1:
             num_tx = int(words[1])
