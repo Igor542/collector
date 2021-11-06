@@ -5,6 +5,7 @@ import logging
 
 from backend import respond, tfinance
 
+
 class bot:
     def __init__(self, backend):
         # Backend to interact with data base
@@ -80,7 +81,7 @@ class bot:
     def register(self, update, context):
         sender_id = self.__get_sender_id(update)
         sender_un = self.__get_sender_un(update)
-        if self.__users.get(sender_id) != None:
+        if self.__users.get(sender_id) is not None:
             # user is already registered
             pass
         else:
