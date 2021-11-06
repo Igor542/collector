@@ -2,13 +2,18 @@ import os
 import sys
 import time
 
-p = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, p)
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+SRC_DIR = os.path.dirname(os.path.dirname(TEST_DIR))
+
+sys.path.insert(0, SRC_DIR)
 import backend.db as db
-# from backend import db
 from backend.respond import *
 
 def gen_db(fname):
+    dump_dir = TEST_DIR + '/.dump'
+    if not os.path.isdir(dump_dir):
+        os.mkdir(dump_dir)
+    fname = dump_dir + '/' + fname
     if os.path.isfile(fname):
         os.remove(fname)
     d = db.DB()
