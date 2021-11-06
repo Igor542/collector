@@ -33,7 +33,8 @@ class Respond:
                 self.obj = kwargs['obj']
         else:
             assert('error' in kwargs and isinstance(kwargs['error'], str))
-            self.error = kwargs['error']
+            error = kwargs['error']
+            self.error = error if error else status_to_str(self.status)
 
     def __bool__(self):
         return self.status == STATUS.OK
@@ -41,7 +42,6 @@ class Respond:
     def __str__(self):
         if self.status == STATUS.OK:
             return 'ok'
-        error = self.error if self.error else status_to_str(self.status)
         return f'error({self.status}): "{error}"'
 
     def __eq__(self, other):
