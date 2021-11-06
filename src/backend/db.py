@@ -127,9 +127,17 @@ class DB:
         ret = [elem[0] for elem in ret]
         return Ok(ret)
 
-    def add_count(self, tr_id, user, value):
+    def add_count(self, tr_id, user_id, value):
         req = f"""
-        INSERT INTO Counts VALUES ({tr_id}, {user}, {value})
+        INSERT INTO Counts VALUES ({tr_id}, {user_id}, {value})
         """
         self.cur.execute(req)
         return Ok()
+
+    def get_user_count_value(self, user_id):
+        req = f"""
+        SELECT SUM(value) FROM Counts WHERE user={user_id}
+        """
+        _ = self.cur.execute(req).fetchone()
+        if _: return Ok(_[0])
+        return Error(STATUS.OTHER_ERROR, error=f'db:get_user_count_value(user_id={user_id})')

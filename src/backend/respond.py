@@ -52,6 +52,9 @@ class Respond:
     def ok(self):
         return self.status == STATUS.OK
 
+    def bad(self):
+        return not self.ok()
+
     def unpack(self):
         assert(self.ok())
         return self.obj

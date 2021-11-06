@@ -26,7 +26,13 @@ class TFinance:
         return Error(STATUS.UNIMPLEMENTED)
 
     def stat(self, user_id):
-        return Error(STATUS.UNIMPLEMENTED)
+        ret = dict()
+        users = self.db.get_all_users().unpack()
+        for user in users:
+            value = self.db.get_user_count_value(user)
+            if value.bad(): return value
+            ret[user] = value.unpack()
+        return Ok(ret)
 
     def log(self, user_id, num_tx=None):
         return Error(STATUS.UNIMPLEMENTED)
@@ -38,16 +44,16 @@ class TFinance:
         tr_id = self.db.add_transaction(user_id, comment=comment).unpack()
 
         if not other_user_ids:
-            other_user_ids = set(self.db.get_all_users())
+            other_user_ids = set(self.db.get_all_users().unpack())
         else:
             other_user_ids = set(other_user_ids).union({user_id})
 
-        n_users = len(other_users_ids)
+        n_users = len(other_user_ids)
         value_per_user = 1. * value / n_users
 
         for uid in other_user_ids:
             this_value = -value_per_user + (value if uid == user_id else 0)
-            self.db.add_count(tr_id, uid, this_value)
+            self.db.add_count(tr_id, uid, this_value).unpack()
 
         return Ok()
 

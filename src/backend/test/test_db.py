@@ -21,7 +21,7 @@ def gen_db(fname):
     return d
 
 def test1():
-    d = gen_db('_test1.db')
+    d = gen_db('test_db_1.db')
     assert(d.has_user(1234) == False)
     assert(d.add_user(1234).ok())
     assert(d.has_user(1234) == True)
@@ -35,11 +35,14 @@ def test1():
     assert(d.add_user(3456).ok())
     s = d.get_all_users()
     assert(s.ok())
-    assert(len(s.unpack()) == 2)
+    users = s.unpack()
+    assert(len(users) == 2)
+    assert(1234 in users)
+    assert(3456 in users)
     d.close()
 
 def test2():
-    d = gen_db('_test2.db')
+    d = gen_db('test_db_2.db')
     assert(d.add_user(1).ok())
     assert(d.add_user(2).ok())
     s = d.add_transaction(1)
@@ -67,13 +70,18 @@ def test2():
     d.close()
 
 def test3():
-    d = gen_db('_test2.db')
+    d = gen_db('test_db_3.db')
     assert(d.add_user(1).ok())
     assert(d.add_user(2).ok())
     assert(d.add_user(3).ok())
     tr_id = d.add_transaction(1).unpack()
     assert(d.add_count(tr_id, 1, +50).ok())
     assert(d.add_count(tr_id, 2, -50).ok())
+    tr_id = d.add_transaction(2).unpack()
+    assert(d.add_count(tr_id, 1, +100).ok())
+    assert(d.add_count(tr_id, 2, -50).ok())
+    assert(d.add_count(tr_id, 3, -50).ok())
+    assert(d.get_user_count_value(1).unpack() == 150)
 
 test1()
 test2()
