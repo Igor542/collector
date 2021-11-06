@@ -51,7 +51,7 @@ class bot:
         return update.message.from_user.id
 
     def __get_sender_un(self, update):
-        return update.message.from_user.username 
+        return update.message.from_user.username
 
     def __get_mentioned_ids(self, update):
         msg = update.message
@@ -89,6 +89,8 @@ class bot:
         respond = self.backend.register(sender_id)
         if not respond.ok():
             self.__reply(update, respond.error)
+        else:
+            self.__reply(update, "success")
 
     @log_info
     def join(self, update, context):
@@ -162,20 +164,26 @@ class bot:
         respond = self.backend.add(sender_id, float(value), mentioned_ids)
         if not respond.ok():
             self.__reply(update, respond.error)
+        else:
+            self.__reply(update, "success")
 
     @log_info
     def cancel(self, update, context):
         sender_id = self.__get_sender_id(update)
-        words = update.message.text.split(' ')
-        if len(words) < 2:
+        args = context.args
+        if len(args) < 1:
             self.__reply_invalid(update)
             return
-        tx = words[1]
+        tx = args[0]
         comment = ''
-        if len(words) > 2:
-            comment = words[2]
+        if len(args) > 1:
+            comment = args[1]
         # TODO: make a call to Backend with: sender_id, tx, comment
-        self.__reply_unimpl(update)
+        respond = self.backend.cancel(sender_id, int(tx), comment)
+        if not respond.ok():
+            self.__reply(update, respond.error)
+        else:
+            self.__reply(update, "success")
 
     @log_info
     def pay(self, update, context):
