@@ -4,12 +4,13 @@ import sqlite3
 
 from backend.respond import *
 
+
 # aux
 def sql_decorator(x):
     if not x:
         return "NULL"
     if type(x) is str:
-        return '"%s"' % (x.replace('"', '""'),)
+        return '"%s"' % (x.replace('"', '""'), )
     return '%s' % str(x)
 
 
@@ -68,7 +69,10 @@ class DB:
 
     def open(self, db_path):
         if self.__ready == True:
-            raise Exception(STATUS.RUNTIME_ERROR, f'db: try opening "{db_path}" while "{self.db_path}" already opened')
+            raise Exception(
+                STATUS.RUNTIME_ERROR,
+                f'db: try opening "{db_path}" while "{self.db_path}" already opened'
+            )
         self.db_path = db_path
         self.__con = sqlite3.connect(db_path, check_same_thread=False)
         self.__cur = self.__con.cursor()
@@ -131,7 +135,7 @@ class DB:
         return Ok(self.cur.lastrowid)
 
     def get_last_transactions(self, num_tx, user_id=None):
-        order_by = 'tx_id' # time ?
+        order_by = 'tx_id'  # time ?
         maybe_constrain = f'WHERE source = {user_id}' if user_id else ''
         req = f"""
         SELECT tx_id FROM Transactions {maybe_constrain}
@@ -164,7 +168,8 @@ class DB:
         """
         _ = self.cur.execute(req).fetchone()
         if _: return Ok(_[0])
-        return Error(STATUS.OTHER_ERROR, error=f'db:get_user_count_value(user_id={user_id})')
+        return Error(STATUS.OTHER_ERROR,
+                     error=f'db:get_user_count_value(user_id={user_id})')
 
     def add_counts_with_inverse_values(self, cancel_tx, new_tx):
         req = f"""

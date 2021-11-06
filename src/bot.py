@@ -37,6 +37,7 @@ class bot:
         def log(self, update, context):
             logging.info(f'Received command: {update.message.text}')
             return func(self, update, context)
+
         return log
 
     def __reply_unimpl(self, update):
@@ -99,7 +100,7 @@ class bot:
         mentioned_ids = self.__get_mentioned_ids(update)
         if len(mentioned_ids) != 1:
             self.__reply_invalid(update)
-    #        self.__reply_help('join')
+            #        self.__reply_help('join')
             return
 
         # TODO: make a call to Backend with: sender_id, mentioned_ids

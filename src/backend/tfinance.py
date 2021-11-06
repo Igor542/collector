@@ -1,16 +1,18 @@
 from backend.respond import *
 from backend.db import DB
 
+
 class TFinance:
     def __init__(self, db):
-        assert(isinstance(db, DB))
-        assert(db.ready())
+        assert (isinstance(db, DB))
+        assert (db.ready())
         self.db = db
 
     def register(self, user_id):
-        assert(isinstance(user_id, int))
+        assert (isinstance(user_id, int))
         if self.db.has_user(user_id):
-            return Error(STATUS.LOGIC_ERROR, f'user "{user_id}" already registered')
+            return Error(STATUS.LOGIC_ERROR,
+                         f'user "{user_id}" already registered')
         return self.db.add_user(user_id)
 
     def join(self, user_id, other_user_id):
@@ -63,15 +65,18 @@ class TFinance:
     def cancel(self, user_id, tx, comment=None):
         tx_info = self.db.get_transaction(tx)
         if not tx_info:
-            return ERROR(STATUS.LOGIC_ERROR, f'transaction "{tx}" does not exist')
+            return ERROR(STATUS.LOGIC_ERROR,
+                         f'transaction "{tx}" does not exist')
         if tx_info.user != user_id:
-            return ERROR(STATUS.LOGIC_ERROR, f'''
+            return ERROR(
+                STATUS.LOGIC_ERROR, f'''
             transaction "{tx}" can only be canceled by "{tx_info.user}", not by "{user_id}"
             ''')
 
         cancel_comment = f'cancel {tx} from {tx_info.time}'
         if comment: cancel_comment += ': ' + comment
-        new_tx_id = self.db.add_transaction(user_id, comment=cancel_comment).unpack()
+        new_tx_id = self.db.add_transaction(user_id,
+                                            comment=cancel_comment).unpack()
 
         self.db.add_counts_with_inverse_values(tx, new_tx_id).unpack()
 
