@@ -10,7 +10,7 @@ class TFinance:
     def register(self, user_id):
         assert(isinstance(user_id, int))
         if self.db.has_user(user_id):
-            return Error(STATUS.LOGIC_ERROR, f'user @@{user_id} already registered')
+            return Error(STATUS.LOGIC_ERROR, f'user "{user_id}" already registered')
         return self.db.add_user(user_id)
 
     def join(self, user_id, other_user_id):
