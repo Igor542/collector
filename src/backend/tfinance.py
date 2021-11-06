@@ -61,10 +61,21 @@ class TFinance:
         return Error(STATUS.UNIMPLEMENTED)
 
     def cancel(self, user_id, tx, comment=None):
-        if not self.db.has_transaction(tx):
+        tx_info = self.db.get_transaction(tx)
+        if not tx_info:
             return ERROR(STATUS.LOGIC_ERROR, f'transaction "{tx}" does not exist')
+        if tx_info.user != user_id:
+            return ERROR(STATUS.LOGIC_ERROR, f'''
+            transaction "{tx}" can only be canceled by "{tx_info.user}", not by "{user_id}"
+            ''')
 
-        return Error(STATUS.UNIMPLEMENTED)
+        cancel_comment = f'cancel {tx} from {tx_info.time}'
+        if comment: cancel_comment += ': ' + comment
+        new_tx_id = self.db.add_transaction(user_id, comment=cancel_comment).unpack()
+
+        self.db.add_counts_with_inverse_values(tx, new_tx_id).unpack()
+
+        return Ok()
 
     def pay(self, user_id, other_user_ids=None, comment=None):
         return Error(STATUS.UNIMPLEMENTED)

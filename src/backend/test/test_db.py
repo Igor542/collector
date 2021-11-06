@@ -70,7 +70,7 @@ def test2():
     tx = d.add_transaction(2, 'super').unpack()
     assert(d.has_transaction(tx))
     tx_info = d.get_transaction(tx)
-    assert(tx_info['user'] == 2 and tx_info['comment'] == 'super')
+    assert(tx_info.user == 2 and tx_info.comment == 'super')
 
     d.close()
 
@@ -82,11 +82,16 @@ def test3():
     tr_id = d.add_transaction(1).unpack()
     assert(d.add_count(tr_id, 1, +50).ok())
     assert(d.add_count(tr_id, 2, -50).ok())
+    tr_id1 = tr_id
     tr_id = d.add_transaction(2).unpack()
     assert(d.add_count(tr_id, 1, +100).ok())
     assert(d.add_count(tr_id, 2, -50).ok())
     assert(d.add_count(tr_id, 3, -50).ok())
     assert(d.get_user_count_value(1).unpack() == 150)
+    users = d.get_transaction_users(tr_id).unpack()
+    assert(1 in users and 2 in users and 3 in users)
+    users = d.get_transaction_users(tr_id1).unpack()
+    assert(1 in users and 2 in users)
 
 test1()
 test2()

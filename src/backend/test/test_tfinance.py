@@ -33,6 +33,10 @@ def test1():
 
     print(t.stat(1).unpack())
 
+    assert(t.cancel(1, 1, 'revert "tr between 1, 2, and 3"').ok())
+
+    print(t.stat(1).unpack())
+
     t.db.close()
 
 test1()

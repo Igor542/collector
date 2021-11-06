@@ -13,6 +13,14 @@ def sql_decorator(x):
     return '%s' % str(x)
 
 
+class Transaction:
+    def __init__(self, tx_id, time, user, comment):
+        self.tx_id = tx_id
+        self.time = time
+        self.user = user
+        self.comment = comment
+
+
 class DB:
     def __init__(self):
         self.db_path = None
@@ -110,8 +118,7 @@ class DB:
         SELECT time, source, comment FROM Transactions WHERE tx_id = {tx_id}
         """
         _ = self.cur.execute(req).fetchone()
-        if _: return {'time':_[0], 'user':_[1], 'comment':_[2]}
-        return None
+        return Transaction(tx_id, _[0], _[1], _[2]) if _ else None
 
     def has_transaction(self, tx_id):
         return self.get_transaction(tx_id) is not None
@@ -134,6 +141,14 @@ class DB:
         ret = [elem[0] for elem in ret]
         return Ok(ret)
 
+    def get_transaction_users(self, tx_id):
+        req = f"""
+        SELECT user FROM Counts WHERE tx_id = {tx_id}
+        """
+        ret = self.cur.execute(req).fetchall()
+        ret = [elem[0] for elem in ret]
+        return Ok(ret)
+
     # Counts
 
     def add_count(self, tx_id, user_id, value):
@@ -150,3 +165,17 @@ class DB:
         _ = self.cur.execute(req).fetchone()
         if _: return Ok(_[0])
         return Error(STATUS.OTHER_ERROR, error=f'db:get_user_count_value(user_id={user_id})')
+
+    def add_counts_with_inverse_values(self, cancel_tx, new_tx):
+        req = f"""
+        SELECT user, value FROM Counts WHERE tx_id = {cancel_tx}
+        """
+        counts = self.cur.execute(req).fetchall()
+        for count in counts:
+            user = count[0]
+            value = -count[1]
+            req = f"""
+            INSERT INTO Counts VALUES ({new_tx}, {user}, {value})
+            """
+            self.cur.execute(req)
+        return Ok()
