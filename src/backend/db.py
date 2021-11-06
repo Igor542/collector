@@ -1,6 +1,8 @@
+import atexit
+
 import sqlite3
 
-from respond import *
+from backend.respond import *
 
 # aux
 def sql_decorator(x):
@@ -15,15 +17,22 @@ class DB:
     def __init__(self):
         self.db_path = None
         self.__ready = False
-        self.con = None
-        self.cur = None
+        self.__con = None
+        self.__cur = None
+        atexit.register(self.close)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        if self.con:
-            self.con.close()
+        if self.__con:
+            self.__con.close()
+
+    @property
+    def cur(self):
+        if not self.ready():
+            raise Exception(STATUS.DB_NOT_READY)
+        return self.__cur
 
     def __create_tables(self):
         req = """
@@ -31,12 +40,12 @@ class DB:
             gid         INTEGER PRIMARY KEY AUTOINCREMENT);
 
         CREATE TABLE IF NOT EXISTS Users (
-            uid         INTEGER PRIMARY KEY AUTOINCREMENT,
-            gid         INTEGER REFERENCES Groups(gid),
-            name        TEXT UNIQUE NOT NULL);
+            uid         INTEGER PRIMARY KEY,
+            gid         INTEGER REFERENCES Groups(gid));
 
         CREATE TABLE IF NOT EXISTS Transactions (
             tr_id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            time        DATETIME NOT NULL,
             source      INTEGER NOT NULL REFERENCES Users(uid),
             comment     TEXT);
 
@@ -47,50 +56,80 @@ class DB:
         """
         self.cur.executescript(req)
 
-    def __add_user(self, name):
-        req = """
-        INSERT INTO Users VALUES (NULL, NULL, %s)
-        """ % sql_decorator(name)
+    def __add_user(self, uid):
+        req = f"""
+        INSERT INTO Users VALUES ({uid}, NULL)
+        """
         self.cur.execute(req)
 
-    def __get_user_uid(self, name):
-        req = """
-        SELECT uid FROM Users WHERE name = %s
-        """ % sql_decorator(name)
-        uid = self.cur.execute(req).fetchone()
-        return uid[0] if uid else None
+    def __has_user(self, uid):
+        req = f"""
+        SELECT 1 FROM Users WHERE uid = {uid}
+        """
+        _ = self.cur.execute(req).fetchone()
+        return _ is not None
+
+    # generic public API
 
     def open(self, db_path):
         if self.__ready == True:
             raise Exception(STATUS.RUNTIME_ERROR, f'db: try opening "{db_path}" while "{self.db_path}" already opened')
         self.db_path = db_path
-        self.con = sqlite3.connect(db_path)
-        self.cur = self.con.cursor()
+        self.__con = sqlite3.connect(db_path)
+        self.__cur = self.__con.cursor()
         self.__ready = True
         self.__create_tables()
         return Ok()
 
     def close(self):
-        if self.con:
-            self.con.commit()
-            self.con.close()
-        self.db_path = None
+        if self.__con:
+            self.__con.commit()
+            self.__con.close()
+        self.__con = None
         self.__ready = False
-        self.con = None
-        self.cur = None
+        self.db_path = None
 
     def ready(self):
         return self.__ready == True
 
-    def has_user(self, user_id):
-        if not self.ready():
-            raise Exception(STATUS.DB_NOT_READY)
-        return self.__get_user_uid(user_id) is not None
+    # public API
 
-    def register(self, user_id):
-        if not self.ready():
-            raise Exception(STATUS.DB_NOT_READY)
+    def has_user(self, uid):
+        return self.__has_user(uid)
 
-        self.__add_user(user_id)
-        self.con.commit()
+    def get_all_users(self):
+        req = f"""
+        SELECT uid FROM Users ORDER BY uid ASC
+        """
+        ret = self.cur.execute(req).fetchall()
+        ret = [elem[0] for elem in ret]
+        return Ok(ret)
+
+    def add_user(self, uid):
+        self.__add_user(uid)
+        return Ok()
+
+    def add_transaction(self, source_id, comment=None):
+        req = """
+        INSERT INTO Transactions VALUES (NULL, CURRENT_TIMESTAMP, %d, %s)
+        """ % (source_id, sql_decorator(comment))
+        self.cur.execute(req)
+        return Ok(self.cur.lastrowid)
+
+    def get_last_transactions(self, num_tx, user_id=None):
+        order_by = 'tr_id' # time ?
+        maybe_constrain = f'WHERE source = {user_id}' if user_id else ''
+        req = f"""
+        SELECT tr_id FROM Transactions {maybe_constrain}
+        ORDER BY {order_by} DESC LIMIT {num_tx}
+        """
+        ret = self.cur.execute(req).fetchall()
+        ret = [elem[0] for elem in ret]
+        return Ok(ret)
+
+    def add_count(self, tr_id, user, value):
+        req = f"""
+        INSERT INTO Counts VALUES ({tr_id}, {user}, {value})
+        """
+        self.cur.execute(req)
         return Ok()

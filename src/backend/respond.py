@@ -1,4 +1,4 @@
-import utils
+import backend.utils as utils
 
 class StatusType(utils.ExtendableType):
     pass
@@ -44,10 +44,22 @@ class Respond:
         error = self.error if self.error else status_to_str(self.status)
         return f'error({self.status}): "{error}"'
 
+    def __eq__(self, other):
+        if isinstance(other, self.__class__):
+            return self.status == other.status # approximation
+        return False
+
+    def ok(self):
+        return self.status == STATUS.OK
+
+    def unpack(self):
+        assert(self.ok())
+        return self.obj
+
 
 class Ok(Respond):
     def __init__(self, obj=None):
-        super().__init__(STATUS.OK, obj=None)
+        super().__init__(STATUS.OK, obj=obj)
 
 
 class Error(Respond):

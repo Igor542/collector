@@ -1,5 +1,5 @@
-from respond import *
-from db import DB
+from backend.respond import *
+from backend.db import DB
 
 class TFinance:
     def __init__(self, db):
@@ -11,7 +11,7 @@ class TFinance:
         assert(isinstance(user_id, int))
         if self.db.has_user(user_id):
             return Error(STATUS.LOGIC_ERROR, f'user @@{user_id} already registered')
-        return self.db.register(user_id)
+        return self.db.add_user(user_id)
 
     def join(self, user_id, other_user_id):
         return Error(STATUS.UNIMPLEMENTED)
@@ -35,7 +35,21 @@ class TFinance:
         return Error(STATUS.UNIMPLEMENTED)
 
     def add(self, user_id, value, other_user_ids=None, comment=None):
-        return Error(STATUS.UNIMPLEMENTED)
+        tr_id = self.db.add_transaction(user_id, comment=comment).unpack()
+
+        if not other_user_ids:
+            other_user_ids = set(self.db.get_all_users())
+        else:
+            other_user_ids = set(other_user_ids).union({user_id})
+
+        n_users = len(other_users_ids)
+        value_per_user = 1. * value / n_users
+
+        for uid in other_user_ids:
+            this_value = -value_per_user + (value if uid == user_id else 0)
+            self.db.add_count(tr_id, uid, this_value)
+
+        return Ok()
 
     def g_add(self, user_id, value, other_user_ids=None, comment=None):
         return Error(STATUS.UNIMPLEMENTED)
