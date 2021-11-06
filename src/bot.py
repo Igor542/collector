@@ -27,7 +27,7 @@ class bot:
         d.add_handler(CommandHandler('pay', self.pay))
         d.add_handler(CommandHandler('reset', self.reset))
         # Init internal state
-        self.__users = {}
+        self.__users = dict()
 
     def run(self):
         self.updater.start_polling()
@@ -118,7 +118,12 @@ class bot:
     def stat(self, update, context):
         sender_id = self.__get_sender_id(update)
         # TODO: make a call to Backend with: sender_id
-        self.__reply_unimpl(update)
+        respond = self.backend.stat(sender_id)
+        if not respond.ok():
+            self.__reply(update, respond.error)
+        else:
+            print(respond)
+            self.__reply(update, respond.unpack())
 
     @log_info
     def log(self, update, context):
@@ -154,7 +159,7 @@ class bot:
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
         # TODO: make a call to Backend with: sender_id, mentioned_ids
-        respond = self.backend.add(sender_id, value, mentioned_ids)
+        respond = self.backend.add(sender_id, float(value), mentioned_ids)
         if not respond.ok():
             self.__reply(update, respond.error)
 
