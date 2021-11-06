@@ -3,14 +3,15 @@ from TOKEN import TOKEN
 
 import logging
 
+from backend import respond, tfinance
 
 class bot:
     def __init__(self, backend):
+        # Backend to interact with data base
         self.backend = backend
         # Create bot
         self.updater = Updater(token=TOKEN, use_context=True)
         d = self.updater.dispatcher
-
         # Register API
         d.add_handler(CommandHandler('help', self.help))
         d.add_handler(CommandHandler('register', self.register))
@@ -25,6 +26,8 @@ class bot:
         d.add_handler(CommandHandler('cancel', self.cancel))
         d.add_handler(CommandHandler('pay', self.pay))
         d.add_handler(CommandHandler('reset', self.reset))
+        # Init internal state
+        self.__users = {}
 
     def run(self):
         self.updater.start_polling()
@@ -41,10 +44,16 @@ class bot:
     def __reply_invalid(self, update):
         update.message.reply_text('Invalid command')
 
-    def __get_sender_id(update):
-        sender = update.message.from_user.id
+    def __reply(self, update, message):
+        update.message.reply_text(message)
 
-    def __get_mentioned_ids(update):
+    def __get_sender_id(self, update):
+        return update.message.from_user.id
+
+    def __get_sender_un(self, update):
+        return update.message.from_user.username 
+
+    def __get_mentioned_ids(self, update):
         msg = update.message
         entities = msg.entities
         mentioned_ids = []
@@ -55,7 +64,9 @@ class bot:
                 user_end = user_begin + e.length
                 username = msg.text[user_begin:user_end]
                 # TODO: convert username to user_id
-                username_id = username
+                username_id = self.__users.get(username)
+                if username_id is None:
+                    username_id = -1
                 mentioned_ids.append(username_id)
         return mentioned_ids
 
@@ -67,94 +78,109 @@ class bot:
 
     @log_info
     def register(self, update, context):
-        sender_id = __get_sender_id(update)
+        sender_id = self.__get_sender_id(update)
+        sender_un = self.__get_sender_un(update)
+        if self.__users.get(sender_id) != None:
+            # user is already registered
+            pass
+        else:
+            self.__users[sender_id] = sender_un
         # TODO: make a call to Backend with sender_id
-        __reply_unimpl(update)
+        respond = self.backend.register(sender_id)
+        if not respond.ok():
+            self.__reply(update, respond.error)
 
     @log_info
     def join(self, update, context):
-        sender_id = __get_sender_id(update)
-        mentioned_ids = __get_mentioned_ids(update)
+        sender_id = self.__get_sender_id(update)
+        mentioned_ids = self.__get_mentioned_ids(update)
         if len(mentioned_ids) != 1:
-            __reply_invalid(update)
-    #        __reply_help('join')
+            self.__reply_invalid(update)
+    #        self.__reply_help('join')
             return
 
         # TODO: make a call to Backend with: sender_id, mentioned_ids
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def ack(self, update, context):
-        sender_id = __get_sender_id(update)
+        sender_id = self.__get_sender_id(update)
         # TODO: make a call to Backend with: sender_id
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def nack(self, update, context):
-        sender_id = __get_sender_id(update)
+        sender_id = self.__get_sender_id(update)
         # TODO: make a call to Backend with: sender_id
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def stat(self, update, context):
-        sender_id = __get_sender_id(update)
+        sender_id = self.__get_sender_id(update)
         # TODO: make a call to Backend with: sender_id
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def log(self, update, context):
-        sender_id = __get_sender_id(update)
+        sender_id = self.__get_sender_id(update)
         words = update.message.text.split(' ')
         print(words)
         num_tx = 0
         if len(words) > 1:
             num_tx = int(words[1])
         # TODO: make a call to Backend with: sender_id, num_tx
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def payment(self, update, context):
-        sender_id = __get_sender_id(update)
+        sender_id = self.__get_sender_id(update)
         # TODO: make a call to Backend with: sender_id
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def g_add(self, update, context):
-        sender_id = __get_sender_id(update)
-        mentioned_ids = __get_mentioned_ids(update)
+        sender_id = self.__get_sender_id(update)
+        mentioned_ids = self.__get_mentioned_ids(update)
         # TODO: make a call to Backend with: sender_id, mentioned_ids
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def add(self, update, context):
-        sender_id = __get_sender_id(update)
-        mentioned_ids = __get_mentioned_ids(update)
+        if len(context.args) < 1:
+            self.__reply_invalid(update)
+            return
+
+        value = context.args[0]
+        sender_id = self.__get_sender_id(update)
+        mentioned_ids = self.__get_mentioned_ids(update)
         # TODO: make a call to Backend with: sender_id, mentioned_ids
-        __reply_unimpl(update)
+        respond = self.backend.add(sender_id, value, mentioned_ids)
+        if not respond.ok():
+            self.__reply(update, respond.error)
 
     @log_info
     def cancel(self, update, context):
-        sender_id = __get_sender_id(update)
+        sender_id = self.__get_sender_id(update)
         words = update.message.text.split(' ')
         if len(words) < 2:
-            __reply_invalid(update)
+            self.__reply_invalid(update)
             return
         tx = words[1]
         comment = ''
         if len(words) > 2:
             comment = words[2]
         # TODO: make a call to Backend with: sender_id, tx, comment
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def pay(self, update, context):
-        sender_id = __get_sender_id(update)
-        mentioned_ids = __get_mentioned_ids(update)
+        sender_id = self.__get_sender_id(update)
+        mentioned_ids = self.__get_mentioned_ids(update)
         # TODO: make a call to Backend with: sender_id, mentioned_ids
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
 
     @log_info
     def reset(self, update, context):
-        sender_id = __get_sender_id(update)
+        sender_id = self.__get_sender_id(update)
         # TODO: make a call to Backend with: sender_id
-        __reply_unimpl(update)
+        self.__reply_unimpl(update)
