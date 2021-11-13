@@ -142,8 +142,8 @@ class Bot:
         words = update.message.text.split(' ')
         if len(words) > 3: return usage(update)
 
-        user_id = None # default for all users
-        num_tx = 10    # default number of transactions
+        user_id = None  # default for all users
+        num_tx = 10  # default number of transactions
         if len(words) > 2:
             num_tx = int(words[2])
             if words[1].startswith('@'):
@@ -171,8 +171,18 @@ class Bot:
     @log_info
     def payment(self, update, context):
         sender_id = self.__get_sender_id(update)
-        # TODO: make a call to Backend with: sender_id
-        self.__reply_unimpl(update)
+        respond = self.backend.payment(sender_id)
+        if respond.bad():
+            self.__reply(update, respond.error)
+            return
+        reply = []
+        for r in respond.unpack():
+            src = ' @' + self.__users.get(int(r.src)) if r.src else ''
+            dst = ' @' + self.__users.get(int(r.dst)) if r.dst else ''
+            reply.append(f'{src} -> {dst}: {r.value}')
+        reply = '\n'.join(reply)
+
+        self.__reply(update, reply)
 
     @log_info
     def g_add(self, update, context):
