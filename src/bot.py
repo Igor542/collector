@@ -118,7 +118,6 @@ class Bot:
     @log_info
     def stat(self, update, context):
         sender_id = self.__get_sender_id(update)
-        # TODO: make a call to Backend with: sender_id
         respond = self.backend.stat(sender_id)
         if not respond.ok():
             self.__reply(update, respond.error)
@@ -130,6 +129,8 @@ class Bot:
                 if username is None:
                     username = user_id
                 reply += f"@{username}: {value}\n"
+            if reply == '':
+                reply = 'No data'
             self.__reply(update, reply)
 
     @log_info
@@ -205,7 +206,6 @@ class Bot:
         comment = ''
         if len(args) > 1:
             comment = args[1]
-        # TODO: make a call to Backend with: sender_id, tx, comment
         respond = self.backend.cancel(sender_id, int(tx), comment)
         if not respond.ok():
             self.__reply(update, respond.error)
