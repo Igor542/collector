@@ -56,6 +56,6 @@ class BotManager:
         return bot.__getattribute__(command)(update, context)
 
     def __register_command(self, name):
-        # Register in Telegram Bot
-        self.updater.dispatcher.add_handler(
-            CommandHandler(name, self.__redirect2bot))
+        if getattr(bot.Bot, name, None) is not None:
+            self.updater.dispatcher.add_handler(
+                CommandHandler(name, self.__redirect2bot))
