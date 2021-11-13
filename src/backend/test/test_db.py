@@ -54,20 +54,20 @@ def test2():
     s = d.add_transaction(2, 50, 'comment')
     assert s.ok() and s.unpack() == 2
 
-    s = d.get_last_transaction_ids(2)
+    s = d.get_last_transaction_ids(user_id=None, count=2)
     assert s.ok
     lst = s.unpack()
     assert len(lst) == 2
     assert lst[0] == 2
     assert lst[1] == 1
-    s = d.get_last_transaction_ids(2, user_id=1)
+    s = d.get_last_transaction_ids(user_id=1, count=20)
     assert s.ok()
     lst = s.unpack()
     assert len(lst) == 1 and lst[0] == 1
 
     for i in range(10):
         d.add_transaction(2, 30, f'comment {i}')
-    s = d.get_last_transaction_ids(20, user_id=2)
+    s = d.get_last_transaction_ids(user_id=2, count=20)
     assert s.ok() and len(s.unpack()) == 11
 
     tx = d.add_transaction(2, 20, 'super').unpack()

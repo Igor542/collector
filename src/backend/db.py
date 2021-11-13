@@ -3,6 +3,7 @@ import atexit
 import sqlite3
 
 from backend.respond import *
+from backend.utypes import *
 
 
 # aux
@@ -12,15 +13,6 @@ def sql_decorator(x):
     if type(x) is str:
         return '"%s"' % (x.replace('"', '""'), )
     return '%s' % str(x)
-
-
-class Transaction:
-    def __init__(self, tx_id, time, user, value, comment):
-        self.tx_id = tx_id
-        self.time = time
-        self.user = user
-        self.value = value
-        self.comment = comment
 
 
 class DB:
@@ -137,12 +129,14 @@ class DB:
         self.cur.execute(req)
         return Ok(self.cur.lastrowid)
 
-    def get_last_transaction_ids(self, num_tx, user_id=None):
+    def get_last_transaction_ids(self, user_id, count):
+        assert isinstance(user_id, int) or user_id is None
+        assert isinstance(count, int) and count > 0
         order_by = 'tx_id'  # time ?
         maybe_constrain = f'WHERE source = {user_id}' if user_id else ''
         req = f"""
         SELECT tx_id FROM Transactions {maybe_constrain}
-        ORDER BY {order_by} DESC LIMIT {num_tx}
+        ORDER BY {order_by} DESC LIMIT {count}
         """
         ret = self.cur.execute(req).fetchall()
         ret = [elem[0] for elem in ret]

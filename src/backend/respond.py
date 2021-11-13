@@ -11,6 +11,7 @@ STATUS.OTHER_ERROR = 1
 STATUS.UNIMPLEMENTED = 2
 STATUS.LOGIC_ERROR = 3
 STATUS.DB_NOT_READY = 4
+STATUS.DB_CORRUPTED = 5
 
 
 def status_to_str(status):
@@ -20,6 +21,7 @@ def status_to_str(status):
         STATUS.UNIMPLEMENTED: 'unimplemented',
         STATUS.LOGIC_ERROR: 'logic error',
         STATUS.DB_NOT_READY: 'db not ready',
+        STATUS.DB_CORRUPTED: 'db is corrupted',
     }.get(status, 'unknown status')
 
 

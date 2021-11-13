@@ -41,6 +41,22 @@ def test1():
     res = t.stat(1).unpack()
     assert res[1] == 10 and res[2] == -5 and res[3] == -5
 
+    res = t.log(1, 1, 1)
+    assert res.ok()
+    res = res.unpack()
+    assert len(res) == 1
+    assert res[0].user == 1 and res[0].value == -100
+
+    assert t.add(2, 30, [1, 3], '')
+
+    res = t.log(1, None, 3)
+    assert res.ok()
+    res = res.unpack()
+    assert len(res) == 3
+    assert res[0].user == 2 and res[0].value == 30
+    assert res[1].user == 1 and res[1].value == -100
+    assert res[2].user == 1 and res[2].value == 15
+
     t.db.close()
 
 
