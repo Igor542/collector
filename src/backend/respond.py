@@ -14,7 +14,7 @@ STATUS.DB_NOT_READY = 4
 
 
 def status_to_str(status):
-    assert (isinstance(status, int))
+    assert isinstance(status, int)
     return {
         STATUS.OTHER_ERROR: 'other error',
         STATUS.UNIMPLEMENTED: 'unimplemented',
@@ -25,7 +25,7 @@ def status_to_str(status):
 
 class Respond:
     def __init__(self, status, **kwargs):
-        assert (isinstance(status, int))
+        assert isinstance(status, int)
 
         self.status = status
         self.obj = None
@@ -35,7 +35,7 @@ class Respond:
             if 'obj' in kwargs:
                 self.obj = kwargs['obj']
         else:
-            assert ('error' in kwargs and isinstance(kwargs['error'], str))
+            assert 'error' in kwargs and isinstance(kwargs['error'], str)
             error = kwargs['error']
             self.error = error if error else status_to_str(self.status)
 
@@ -59,7 +59,7 @@ class Respond:
         return not self.ok()
 
     def unpack(self):
-        assert (self.ok())
+        assert self.ok()
         return self.obj
 
 
@@ -70,5 +70,5 @@ class Ok(Respond):
 
 class Error(Respond):
     def __init__(self, status, error=''):
-        assert (status != STATUS.OK)
+        assert status != STATUS.OK
         super().__init__(status, error=error)

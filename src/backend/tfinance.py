@@ -4,12 +4,12 @@ from backend.db import DB
 
 class TFinance:
     def __init__(self, db):
-        assert (isinstance(db, DB))
-        assert (db.ready())
+        assert isinstance(db, DB)
+        assert db.ready()
         self.db = db
 
     def register(self, user_id):
-        assert (isinstance(user_id, int))
+        assert isinstance(user_id, int)
         if self.db.has_user(user_id):
             return Error(STATUS.LOGIC_ERROR,
                          f'user "{user_id}" already registered')
