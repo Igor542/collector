@@ -4,11 +4,21 @@ from backend import respond, tfinance
 
 
 class Bot:
-    def __init__(self, backend):
-        # Backend to interact with data base
+    def __init__(self, bot, chat_id, backend):
+        self.bot = bot
         self.backend = backend
+        self.chat_id = chat_id
         # Add users
         self.__users = dict()
+        respond = backend.db.get_all_users()
+        if respond.ok():
+            user_ids = respond.unpack()
+            for uid in user_ids:
+                member = bot.get_chat_member(user_id=uid, chat_id=chat_id)
+                username = member.user.username
+                if username is None:
+                    username = member.user.first_name
+                self.__users[int(uid)] = username
 
     def log_info(func):
         def log(self, update, context):
@@ -33,6 +43,12 @@ class Bot:
     def __get_sender_un(self, update):
         return update.message.from_user.username
 
+    def __get_user_id(self, username):
+        for key,value in self.__users.items():
+            if value == username:
+                return key
+        return 0
+
     def __get_mentioned_ids(self, update):
         msg = update.message
         entities = msg.entities
@@ -44,10 +60,10 @@ class Bot:
                 user_end = user_begin + e.length
                 username = msg.text[user_begin:user_end]
                 # TODO: convert username to user_id
-                username_id = self.__users.get(username)
-                if username_id is None:
-                    username_id = -1
-                mentioned_ids.append(username_id)
+                user_id = self.__get_user_id(username)
+                if user_id is None:
+                    user_id = -1
+                mentioned_ids.append(user_id)
         return mentioned_ids
 
     # Bot API
@@ -59,14 +75,13 @@ class Bot:
     @log_info
     def register(self, update, context):
         # register user
-        sender_id = self.__get_sender_id(update)
+        sender_id = int(self.__get_sender_id(update))
         sender_un = self.__get_sender_un(update)
         if self.__users.get(sender_id) is not None:
             # user is already registered
             pass
         else:
             self.__users[sender_id] = sender_un
-        # TODO: make a call to Backend with sender_id
         respond = self.backend.register(sender_id)
         if not respond.ok():
             self.__reply(update, respond.error)
@@ -105,7 +120,14 @@ class Bot:
         if not respond.ok():
             self.__reply(update, respond.error)
         else:
-            self.__reply(update, respond.unpack())
+            stat_info = respond.unpack()
+            reply = ''
+            for user_id,value in stat_info.items():
+                username = self.__users.get(int(user_id))
+                if username is None:
+                    username = user_id
+                reply += f"@{username}: {value}\n"
+            self.__reply(update, reply)
 
     @log_info
     def log(self, update, context):

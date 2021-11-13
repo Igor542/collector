@@ -1,5 +1,6 @@
 import os
 
+import telegram
 from telegram.ext import Updater, CommandHandler
 from TOKEN import TOKEN
 
@@ -13,7 +14,8 @@ class BotManager:
         # - Create a bot for each chat
 
         # Create Telegram bot
-        self.updater = Updater(token=TOKEN, use_context=True)
+        self.bot = telegram.Bot(token=TOKEN)
+        self.updater = Updater(bot=self.bot, use_context=True)
         # Register API
         commands = [
             'help', 'register', 'join', 'ack', 'nack', 'stat', 'log',
@@ -45,7 +47,7 @@ class BotManager:
             data_base = db.DB()
             data_base.open(f"{chat_dir}/db.db")
             backend = tfinance.TFinance(data_base)
-            b = bot.Bot(backend)
+            b = bot.Bot(self.bot, chat_id, backend)
             self.__bots[chat_id] = b
         return b
 
