@@ -93,13 +93,11 @@ class TFinance:
     def cancel(self, user_id, tx, comment=None):
         tx_info = self.db.get_transaction(tx)
         if not tx_info:
-            return ERROR(STATUS.LOGIC_ERROR,
+            return Error(STATUS.LOGIC_ERROR,
                          f'transaction ({tx}) does not exist')
         if tx_info.user != user_id:
-            return ERROR(
-                STATUS.LOGIC_ERROR, f'''
-            transaction ({tx}) can only be canceled by "{tx_info.user}", not by "{user_id}"
-            ''')
+            return Error(STATUS.LOGIC_ERROR,
+                         f'''transaction ({tx}) can only be canceled by "{tx_info.user}", not by "{user_id}"''')
 
         cancel_comment = f'cancel ({tx}) from {tx_info.time}.'
         if comment: cancel_comment += ' ' + comment
