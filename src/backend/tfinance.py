@@ -1,11 +1,14 @@
+import functools
+
 from backend.respond import *
 from backend.utypes import *
-from backend.db import DB
+import backend.db
+import backend.umath
 
 
 class TFinance:
     def __init__(self, db):
-        assert isinstance(db, DB)
+        assert isinstance(db, backend.db.DB)
         assert db.ready()
         self.db = db
 
@@ -49,8 +52,23 @@ class TFinance:
             ret.append(tx_info)
         return Ok(ret)
 
-    def payment(self, user_id, a2a=None):
-        return Error(STATUS.UNIMPLEMENTED)
+    """ returns a list of utypes.PayOffItems """
+    def payment(self, user_id):
+        users = self.db.get_all_users()
+        if users.bad(): return users
+        state = []
+        for user in users.unpack():
+            value = self.db.get_user_count_value(user)
+            if value.bad(): return value
+            state.append((user, value))
+
+        # check that total sum is zero
+        total = functools.reduce(lambda a, b: a[1] + b[1], state)
+        if abs(total) > 0.01:
+            return Error(STATUS.DB_CORRUPTED, error=f'grand total is non-zero: {total}')
+
+        ret = backend.umath.payment(state)
+        return Ok(ret)
 
     def add(self, user_id, value, other_user_ids=None, comment=None):
         tx_id = self.db.add_transaction(user_id, value, comment).unpack()
