@@ -159,9 +159,11 @@ class Bot:
             return
 
         reply = []
-        for r in repond.unpack():
-            user = self.__users.get(int(r.user))
-            reply.append(f'({r.tx_id}). @{user}  {r.value}  {r.comment}')
+        for r in reversed(respond.unpack()):
+            user = ' @' + self.__users.get(int(r.user)) if r.user else ''
+            comment = ' ' + r.comment if r.comment else ''
+            value = '' if r.value == 0 else f" {r.value}"
+            reply.append(f'({r.tx_id}).{user} {value}  {comment}')
         reply = '\n'.join(reply)
 
         self.__reply(update, reply)
