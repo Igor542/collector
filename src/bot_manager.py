@@ -25,8 +25,7 @@ class BotManager:
             self.__register_command(c)
         self.__bots = dict()
         # init data directory
-        self.cur_dir = os.getcwd()
-        self.data_dir = self.cur_dir + '/__data'
+        self.data_dir = os.getcwd() + '/__data'
         if not os.path.isdir(self.data_dir):
             os.mkdir(self.data_dir)
 

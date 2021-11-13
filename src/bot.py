@@ -134,13 +134,36 @@ class Bot:
 
     @log_info
     def log(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /log [@user | me] [num_tx]')
+
         sender_id = self.__get_sender_id(update)
         words = update.message.text.split(' ')
-        num_tx = 0
-        if len(words) > 1:
-            num_tx = int(words[1])
-        # TODO: make a call to Backend with: sender_id, num_tx
-        self.__reply_unimpl(update)
+        if len(words) > 3: return usage(update)
+
+        user_id = None # default for all users
+        num_tx = 10    # default number of transactions
+        if len(words) > 2:
+            num_tx = int(words[2])
+            if words[1].startswith('@'):
+                user_id = self.__get_mentioned_ids(update)[0]
+            elif words[1] == 'me':
+                user_id = sender_id
+            else:
+                return usage(update)
+
+        respond = self.backend.log(sender_id, user_id, num_tx)
+        if respond.bad():
+            self.__reply(update, respond.error)
+            return
+
+        reply = []
+        for r in repond.unpack():
+            user = self.__users.get(int(r.user))
+            reply.append(f'({r.tx_id}). @{user}  {r.value}  {r.comment}')
+        reply = '\n'.join(reply)
+
+        self.__reply(update, reply)
 
     @log_info
     def payment(self, update, context):
