@@ -1,18 +1,14 @@
 import logging
 
-import bot
-from backend import db, tfinance
+from bot_manager import BotManager
 
 
 class Collector:
     def __init__(self):
-        data_base = db.DB()
-        data_base.open("test_db.db")
-        backend = tfinance.TFinance(data_base)
-        self.bot = bot.bot(backend)
+        self.bot_manager = BotManager()
 
     def run(self):
-        self.bot.run()
+        self.bot_manager.run()
 
 
 def main():

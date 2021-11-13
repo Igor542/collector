@@ -1,41 +1,19 @@
-from telegram.ext import Updater, CommandHandler
-from TOKEN import TOKEN
-
 import logging
 
 from backend import respond, tfinance
 
 
-class bot:
+class Bot:
     def __init__(self, backend):
         # Backend to interact with data base
         self.backend = backend
-        # Create bot
-        self.updater = Updater(token=TOKEN, use_context=True)
-        d = self.updater.dispatcher
-        # Register API
-        d.add_handler(CommandHandler('help', self.help))
-        d.add_handler(CommandHandler('register', self.register))
-        d.add_handler(CommandHandler('join', self.join))
-        d.add_handler(CommandHandler('ack', self.ack))
-        d.add_handler(CommandHandler('nack', self.nack))
-        d.add_handler(CommandHandler('stat', self.stat))
-        d.add_handler(CommandHandler('log', self.log))
-        d.add_handler(CommandHandler('payment', self.payment))
-        d.add_handler(CommandHandler('g_add', self.g_add))
-        d.add_handler(CommandHandler('add', self.add))
-        d.add_handler(CommandHandler('cancel', self.cancel))
-        d.add_handler(CommandHandler('pay', self.pay))
-        d.add_handler(CommandHandler('reset', self.reset))
-        # Init internal state
+        # Add users
         self.__users = dict()
-
-    def run(self):
-        self.updater.start_polling()
 
     def log_info(func):
         def log(self, update, context):
             logging.info(f'Received command: {update.message.text}')
+            logging.info(f'RAW update: {update}')
             return func(self, update, context)
 
         return log
@@ -80,6 +58,7 @@ class bot:
 
     @log_info
     def register(self, update, context):
+        # register user
         sender_id = self.__get_sender_id(update)
         sender_un = self.__get_sender_un(update)
         if self.__users.get(sender_id) is not None:
