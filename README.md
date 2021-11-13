@@ -11,7 +11,7 @@ Command                                 | acK   | Description
 `/ack` / `/nack`                        |       | Agree / disagree with the last command.
 `/stat`                                 |       | Show current statistics.
 `/log [@user|me] [num_tx]`              |       | Show last `num_tx` transactions (must be positive integer number, default: 10) for a given @user, self (`me`), or all if omitted. <br> Ex: `/log me 10`.
-`/payment [a2a]`                        |       | Show payments with minimized transaction number, unless `a2a` modifier is used.
+`/payment`                              |       | Show pay-offs.
 `/[g_]add <value> [@user...] [comment]` |       | Register `value` spending across all or mention users. `g_` modifier to split between groups instead of users. <br> Ex: `/add 10.3 @u1 @u2 Dinner`
 `/cancel <tx> [comment]`                | +     | Cancel `tx` transaction (see `/log`). <br> Ex: `/cancel 13 no surfing`
 `/pay [@user1...] [comment]`            | +     | Register pay-off between all or mentioned users. <br> Ex: `/pay @u1 @u2`
