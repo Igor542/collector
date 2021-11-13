@@ -48,32 +48,32 @@ def test2():
     d = gen_db('test_db_2.db')
     assert d.add_user(1).ok()
     assert d.add_user(2).ok()
-    s = d.add_transaction(1)
+    s = d.add_transaction(1, 100)
     assert s.ok()
     assert s.unpack() == 1
-    s = d.add_transaction(2, 'comment')
+    s = d.add_transaction(2, 50, 'comment')
     assert s.ok() and s.unpack() == 2
 
-    s = d.get_last_transactions(2)
+    s = d.get_last_transaction_ids(2)
     assert s.ok
     lst = s.unpack()
     assert len(lst) == 2
     assert lst[0] == 2
     assert lst[1] == 1
-    s = d.get_last_transactions(2, user_id=1)
+    s = d.get_last_transaction_ids(2, user_id=1)
     assert s.ok()
     lst = s.unpack()
     assert len(lst) == 1 and lst[0] == 1
 
     for i in range(10):
-        d.add_transaction(2, f'comment {i}')
-    s = d.get_last_transactions(20, user_id=2)
+        d.add_transaction(2, 30, f'comment {i}')
+    s = d.get_last_transaction_ids(20, user_id=2)
     assert s.ok() and len(s.unpack()) == 11
 
-    tx = d.add_transaction(2, 'super').unpack()
+    tx = d.add_transaction(2, 20, 'super').unpack()
     assert d.has_transaction(tx)
     tx_info = d.get_transaction(tx)
-    assert tx_info.user == 2 and tx_info.comment == 'super'
+    assert tx_info.user == 2 and tx_info.value == 20 and tx_info.comment == 'super'
 
     d.close()
 
@@ -83,11 +83,11 @@ def test3():
     assert d.add_user(1).ok()
     assert d.add_user(2).ok()
     assert d.add_user(3).ok()
-    tr_id = d.add_transaction(1).unpack()
+    tr_id = d.add_transaction(1, 100).unpack()
     assert d.add_count(tr_id, 1, +50).ok()
     assert d.add_count(tr_id, 2, -50).ok()
     tr_id1 = tr_id
-    tr_id = d.add_transaction(2).unpack()
+    tr_id = d.add_transaction(2, 200).unpack()
     assert d.add_count(tr_id, 1, +100).ok()
     assert d.add_count(tr_id, 2, -50).ok()
     assert d.add_count(tr_id, 3, -50).ok()

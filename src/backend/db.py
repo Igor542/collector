@@ -15,10 +15,11 @@ def sql_decorator(x):
 
 
 class Transaction:
-    def __init__(self, tx_id, time, user, comment):
+    def __init__(self, tx_id, time, user, value, comment):
         self.tx_id = tx_id
         self.time = time
         self.user = user
+        self.value = value
         self.comment = comment
 
 
@@ -56,6 +57,7 @@ class DB:
             tx_id       INTEGER PRIMARY KEY AUTOINCREMENT,
             time        DATETIME NOT NULL,
             source      INTEGER NOT NULL REFERENCES Users(uid),
+            value       REAL NOT NULL,
             comment     TEXT);
 
         CREATE TABLE IF NOT EXISTS Counts (
@@ -119,22 +121,23 @@ class DB:
 
     def get_transaction(self, tx_id):
         req = f"""
-        SELECT time, source, comment FROM Transactions WHERE tx_id = {tx_id}
+        SELECT time, source, value, comment FROM Transactions WHERE tx_id = {tx_id}
         """
         _ = self.cur.execute(req).fetchone()
-        return Transaction(tx_id, _[0], _[1], _[2]) if _ else None
+        return Transaction(tx_id, _[0], _[1], _[2], _[3]) if _ else None
 
     def has_transaction(self, tx_id):
         return self.get_transaction(tx_id) is not None
 
-    def add_transaction(self, source_id, comment=None):
-        req = """
-        INSERT INTO Transactions VALUES (NULL, CURRENT_TIMESTAMP, %d, %s)
-        """ % (source_id, sql_decorator(comment))
+    def add_transaction(self, source_id, value, comment=None):
+        req = f"""
+        INSERT INTO Transactions
+        VALUES (NULL, CURRENT_TIMESTAMP, {source_id}, {value}, {sql_decorator(comment)})
+        """
         self.cur.execute(req)
         return Ok(self.cur.lastrowid)
 
-    def get_last_transactions(self, num_tx, user_id=None):
+    def get_last_transaction_ids(self, num_tx, user_id=None):
         order_by = 'tx_id'  # time ?
         maybe_constrain = f'WHERE source = {user_id}' if user_id else ''
         req = f"""

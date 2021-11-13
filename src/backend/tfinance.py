@@ -36,14 +36,14 @@ class TFinance:
             ret[user] = value.unpack()
         return Ok(ret)
 
-    def log(self, user_id, num_tx=None):
+    def log(self, user_id, other_user_id, num_tx):
         return Error(STATUS.UNIMPLEMENTED)
 
     def payment(self, user_id, a2a=None):
         return Error(STATUS.UNIMPLEMENTED)
 
     def add(self, user_id, value, other_user_ids=None, comment=None):
-        tx_id = self.db.add_transaction(user_id, comment=comment).unpack()
+        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
 
         if not other_user_ids:
             other_user_ids = set(self.db.get_all_users().unpack())
@@ -75,8 +75,7 @@ class TFinance:
 
         cancel_comment = f'cancel {tx} from {tx_info.time}'
         if comment: cancel_comment += ': ' + comment
-        new_tx_id = self.db.add_transaction(user_id,
-                                            comment=cancel_comment).unpack()
+        new_tx_id = self.db.add_transaction(user_id, -tx_info.value, cancel_comment).unpack()
 
         self.db.add_counts_with_inverse_values(tx, new_tx_id).unpack()
 
