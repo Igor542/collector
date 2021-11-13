@@ -213,11 +213,20 @@ class Bot:
             self.__reply(update, "success")
 
     @log_info
-    def pay(self, update, context):
+    def compensate(self, update, context):
         sender_id = self.__get_sender_id(update)
-        mentioned_ids = self.__get_mentioned_ids(update)
-        # TODO: make a call to Backend with: sender_id, mentioned_ids
-        self.__reply_unimpl(update)
+        args = context.args
+        if len(args) > 1:
+            self.__reply_invalid(update)
+            return
+        comment = None
+        if len(args) == 1:
+            comment = arg[0]
+        respond = self.backend.compensate(sender_id, comment)
+        if not respond.ok():
+            self.__reply(update, respond.error)
+        else:
+            self.__reply(update, "success")
 
     @log_info
     def reset(self, update, context):

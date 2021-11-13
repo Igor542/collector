@@ -19,7 +19,7 @@ class BotManager:
         # Register API
         commands = [
             'help', 'register', 'join', 'ack', 'nack', 'stat', 'log',
-            'payment', 'g_add', 'add', 'cancel', 'pay', 'reset'
+            'payment', 'g_add', 'add', 'cancel', 'compensate', 'reset'
         ]
         for c in commands:
             self.__register_command(c)
