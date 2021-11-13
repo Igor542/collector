@@ -1,5 +1,3 @@
-import functools
-
 from backend.respond import *
 from backend.utypes import *
 import backend.db
@@ -57,13 +55,15 @@ class TFinance:
         users = self.db.get_all_users()
         if users.bad(): return users
         state = []
+        total = 0.
         for user in users.unpack():
             value = self.db.get_user_count_value(user)
             if value.bad(): return value
+            value = value.unpack()
             state.append((user, value))
+            total += value
 
         # check that total sum is zero
-        total = functools.reduce(lambda a, b: a[1] + b[1], state)
         if abs(total) > 0.01:
             return Error(STATUS.DB_CORRUPTED, error=f'grand total is non-zero: {total}')
 
@@ -109,8 +109,18 @@ class TFinance:
 
         return Ok()
 
-    def pay(self, user_id, other_user_ids=None, comment=None):
-        return Error(STATUS.UNIMPLEMENTED)
+    def compensate(self, user_id, comment=None):
+        comment = 'compensate.' + (' ' + comment if comment else '')
+        tx_id = self.db.add_transaction('NULL', 0, comment)
+        if tx_id.bad():
+            return tx_id
+        else:
+            tx_id = tx_id.unpack()
 
-    def reset(self, user_id):
-        return Error(STATUS.UNIMPLEMENTED)
+        user_ids = self.db.get_all_users()
+        if user_ids.bad(): return user_ids
+        for user_id in user_ids.unpack():
+            value = self.db.get_user_count_value(user_id)
+            if value.bad(): return value
+            self.db.add_count(tx_id, user_id, -value.unpack())
+        return Ok()

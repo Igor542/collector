@@ -48,7 +48,7 @@ class DB:
         CREATE TABLE IF NOT EXISTS Transactions (
             tx_id       INTEGER PRIMARY KEY AUTOINCREMENT,
             time        DATETIME NOT NULL,
-            source      INTEGER NOT NULL REFERENCES Users(uid),
+            source      INTEGER REFERENCES Users(uid),
             value       REAL NOT NULL,
             comment     TEXT);
 

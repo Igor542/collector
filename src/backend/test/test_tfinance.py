@@ -57,6 +57,11 @@ def test1():
     assert res[1].user == 1 and res[1].value == -100
     assert res[2].user == 1 and res[2].value == 15
 
+    assert t.compensate(1).ok()
+
+    res = t.payment(1)
+    assert res.ok() and len(res.unpack()) == 0
+
     t.db.close()
 
 
