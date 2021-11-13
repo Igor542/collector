@@ -6,8 +6,8 @@ from backend import respond, tfinance
 class Bot:
     def __init__(self, bot, chat_id, backend):
         self.bot = bot
-        self.backend = backend
         self.chat_id = chat_id
+        self.backend = backend
         # Add users
         self.__users = dict()
         respond = backend.db.get_all_users()
@@ -44,7 +44,7 @@ class Bot:
         return update.message.from_user.username
 
     def __get_user_id(self, username):
-        for key,value in self.__users.items():
+        for key, value in self.__users.items():
             if value == username:
                 return key
         return 0
@@ -55,6 +55,9 @@ class Bot:
         mentioned_ids = []
 
         for e in entities:
+            if e.type == 'text_mention':
+                user_id = e.user.id
+                mentioned_ids.append(user_id)
             if e.type == 'mention':
                 user_begin = e.offset
                 user_end = user_begin + e.length
@@ -122,7 +125,7 @@ class Bot:
         else:
             stat_info = respond.unpack()
             reply = ''
-            for user_id,value in stat_info.items():
+            for user_id, value in stat_info.items():
                 username = self.__users.get(int(user_id))
                 if username is None:
                     username = user_id
