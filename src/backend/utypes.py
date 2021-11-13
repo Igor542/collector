@@ -11,3 +11,16 @@ class Transaction:
 
     def __repr__(self):
         print(str(self))
+
+
+class PayOffItem:
+    def __init__(self, src, dst, value):
+        self.src = src
+        self.dst = dst
+        self.value = value
+
+    def __str__(self):
+        return f'PayOffItem:{{src:{self.src}, dst:{self.dst}, value:{self.value}}}'
+
+    def __repr__(self):
+        print(str(self))
