@@ -6,7 +6,7 @@ Simple telegram chat bot to track money spending and help with payments.
 
 Command                                 | acK | Description
 --------------------------------------- | --- | ------------
-`/register [@user...]`                  |     | Register a user.
+`/register`                             |     | Register a user.
 `/join @user` / `/disjoin`              |  +  | Form a group of users. All transactions are split between users in one group. <br> Ex: `/join @u3`
 `/ack` / `/nack`                        |     | Agree / disagree with the last command.
 `/stat`                                 |     | Show current statistics.
