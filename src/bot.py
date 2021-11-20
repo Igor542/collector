@@ -77,6 +77,11 @@ class Bot:
 
     @log_info
     def register(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /register')
+
+        if len(context.args) > 0: return usage(update)
+
         # register user
         sender_id = int(self.__get_sender_id(update))
         sender_un = self.__get_sender_un(update)
@@ -93,30 +98,45 @@ class Bot:
 
     @log_info
     def join(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /join @user')
+
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
-        if len(mentioned_ids) != 1:
-            self.__reply_invalid(update)
-            #        self.__reply_help('join')
-            return
+        if len(mentioned_ids) != 1: return usage(update)
 
         # TODO: make a call to Backend with: sender_id, mentioned_ids
         self.__reply_unimpl(update)
 
     @log_info
     def ack(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /ack')
+
+        if len(context.args) > 0: return usage(update)
+
         sender_id = self.__get_sender_id(update)
         # TODO: make a call to Backend with: sender_id
         self.__reply_unimpl(update)
 
     @log_info
     def nack(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /ack')
+
+        if len(context.args) > 0: return usage(update)
+
         sender_id = self.__get_sender_id(update)
         # TODO: make a call to Backend with: sender_id
         self.__reply_unimpl(update)
 
     @log_info
     def stat(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /stat')
+
+        if len(context.args) > 0: return usage(update)
+
         sender_id = self.__get_sender_id(update)
         respond = self.backend.stat(sender_id)
         if not respond.ok():
@@ -170,6 +190,11 @@ class Bot:
 
     @log_info
     def payment(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /payment')
+
+        if len(context.args) > 0: return usage(update)
+
         sender_id = self.__get_sender_id(update)
         respond = self.backend.payment(sender_id)
         if respond.bad():
@@ -186,6 +211,11 @@ class Bot:
 
     @log_info
     def g_add(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /g_add <value> [@user...] [comment]')
+
+        if len(context.args) < 1: return usage(update)
+
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
         # TODO: make a call to Backend with: sender_id, mentioned_ids
@@ -193,9 +223,10 @@ class Bot:
 
     @log_info
     def add(self, update, context):
-        if len(context.args) < 1:
-            self.__reply_invalid(update)
-            return
+        def usage(update):
+            self.__reply(update, 'usage: /add <value> [@user...] [comment]')
+
+        if len(context.args) < 1: return usage(update)
 
         value = context.args[0]
         sender_id = self.__get_sender_id(update)
@@ -209,11 +240,13 @@ class Bot:
 
     @log_info
     def cancel(self, update, context):
-        sender_id = self.__get_sender_id(update)
+        def usage(update):
+            self.__reply(update, 'usage: /cancel <tx> [comment]')
+
         args = context.args
-        if len(args) < 1:
-            self.__reply_invalid(update)
-            return
+        if len(args) < 1: return usage(update)
+
+        sender_id = self.__get_sender_id(update)
         tx = args[0]
         comment = ''
         if len(args) > 1:
@@ -226,11 +259,13 @@ class Bot:
 
     @log_info
     def compensate(self, update, context):
-        sender_id = self.__get_sender_id(update)
+        def usage(update):
+            self.__reply(update, 'usage: /compensate [comment]')
+
         args = context.args
-        if len(args) > 1:
-            self.__reply_invalid(update)
-            return
+        if len(args) > 1: return usage(update)
+
+        sender_id = self.__get_sender_id(update)
         comment = None
         if len(args) == 1:
             comment = arg[0]
