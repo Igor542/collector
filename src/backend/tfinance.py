@@ -10,6 +10,9 @@ class TFinance:
         assert db.ready()
         self.db = db
 
+    def exit(self):
+        self.db.close()
+
     def register(self, user_id):
         assert isinstance(user_id, int)
         if self.db.has_user(user_id):
