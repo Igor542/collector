@@ -1,8 +1,12 @@
-yapf -r -i src
-DIFF=`git diff | wc -l`
-if [ "$DIFF" != "0" ]; then
-    echo "FAILED"
-    exit $DIFF
+DIR_FOR_YAPF="src"
+
+yapf -r -i $DIR_FOR_YAPF
+git diff --exit-code -- $DIR_FOR_YAPF
+rc=$?
+
+if [ $rc -ne 0 ]; then
+    echo YAPF check: FAILED
 else
-    echo "SUCCESS"
+    echo YAPF check: SUCCESS
 fi
+exit $rc
