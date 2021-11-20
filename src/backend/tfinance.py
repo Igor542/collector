@@ -21,10 +21,66 @@ class TFinance:
         return self.db.add_user(user_id)
 
     def join(self, user_id, other_user_id):
-        return Error(STATUS.UNIMPLEMENTED)
+        assert isinstance(user_id, int)
+        if not self.db.has_user(user_id):
+            return Error(STATUS.LOGIC_ERROR,
+                         f'user "{user_id}" is not registered')
+        assert isinstance(other_user_id, int)
+        if not self.db.has_user(other_user_id):
+            return Error(STATUS.LOGIC_ERROR,
+                         f'user "{other_user_id}" is not registered')
+        respond = self.db.get_user_group(user_id)
+        if respond.bad(): return respond
+        u_gid = respond.unpack()
+        respond = self.db.get_user_group(other_user_id)
+        if respond.bad(): return respond
+        o_gid = respond.unpack()
+        if u_gid is None and o_gid is None:
+            respond = self.db.add_group()
+            if respond.bad(): return respond
+            new_gid = respond.unpack()
+            for i in [user_id, other_user_id]:
+                respond = self.db.set_user_group(i, new_gid)
+                if respond.bad(): return respond
+        elif o_gid is None:
+            new_gid = u_gid
+            respond = self.db.set_user_group(other_user_id, new_gid)
+            if respond.bad(): return respond
+        elif u_gid is None:
+            new_gid = o_gid
+            respond = self.db.set_user_group(user_id, new_gid)
+            if respond.bad(): return respond
+        else:
+            new_gid = u_gid
+            respond = self.db.get_users(o_gid)
+            if respond.bad(): return respond
+            users_o_gid = respond.unpack()
+            for i in users_o_gid:
+                respond = self.db.set_user_group(i, new_gid)
+                if respond.bad(): return respond
+            respond = self.db.del_group(o_gid)
+            if respond.bad(): return respond
+        return Ok()
 
     def disjoin(self, user_id):
-        return Error(STATUS.UNIMPLEMENTED)
+        assert isinstance(user_id, int)
+        if not self.db.has_user(user_id):
+            return Error(STATUS.LOGIC_ERROR,
+                         f'user "{user_id}" is not registered')
+        respond = self.db.get_user_group(user_id)
+        if respond.bad(): return respond
+        u_gid = respond.unpack()
+        respond = self.db.get_users(o_gid)
+        if respond.bad(): return respond
+        users_u_gid = respond.unpack()
+        if len(users_u_gid) == 2:
+            for i in users_u_gid:
+                respond = self.db.unset_user_group(i)
+                if respond.bad(): return respond
+        else:
+            respond = self.db.unset_user_group(user_id)
+            if respond.bad(): return respond
+        return Ok()
 
     def ack(self, user_id):
         return Error(STATUS.UNIMPLEMENTED)

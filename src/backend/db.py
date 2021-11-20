@@ -100,9 +100,42 @@ class DB:
         ret = [elem[0] for elem in ret]
         return Ok(ret)
 
+    def get_users(self, gid):
+        req = f"""
+        SELECT uid FROM Users WHERE gid = {gid}
+        """
+        ret = self.cur.execute(req).fetchall()
+        ret = [elem[0] for elem in ret]
+        return Ok(ret)
+
     def add_user(self, uid):
         req = f"""
         INSERT INTO Users VALUES ({uid}, NULL)
+        """
+        self.cur.execute(req)
+        return Ok()
+
+    def set_user_group(self, uid, gid):
+        req = f"""
+        """
+        self.cur.execute(req)
+        return Ok()
+
+    def unset_user_group(self, uid):
+        return self.set_user_group(-1)
+
+    # Groups
+
+    def add_group(self):
+        req = f"""
+        INSERT Into Groups (NULL)
+        """
+        self.cur.execute(req)
+        return Ok()
+
+    def del_group(self, gid):
+        req = f"""
+        DELETE FROM Groups WHERE gid = {gid}
         """
         self.cur.execute(req)
         return Ok()
