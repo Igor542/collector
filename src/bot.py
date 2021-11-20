@@ -20,6 +20,10 @@ class Bot:
                     username = member.user.first_name
                 self.__users[int(uid)] = username
 
+    def exit(self):
+        logging.info(f'Stopping bot with chat `{self.chat_id}`...')
+        self.backend.exit()
+
     def log_info(func):
         def log(self, update, context):
             logging.info(f'Received command: {update.message.text}')

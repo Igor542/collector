@@ -1,5 +1,4 @@
-import atexit
-
+import logging
 import sqlite3
 
 from backend.respond import *
@@ -21,14 +20,12 @@ class DB:
         self.__ready = False
         self.__con = None
         self.__cur = None
-        atexit.register(self.close)
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):
-        if self.__con:
-            self.__con.close()
+        self.close()
 
     @property
     def cur(self):
@@ -75,6 +72,7 @@ class DB:
         return Ok()
 
     def close(self):
+        logging.info(f'Closing db "{self.db_path}"')
         if self.__con:
             self.__con.commit()
             self.__con.close()

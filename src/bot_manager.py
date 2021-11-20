@@ -16,7 +16,9 @@ class BotManager:
 
         # Create Telegram bot
         self.bot = telegram.Bot(token=self.__read_token(token_file))
-        self.updater = Updater(bot=self.bot, use_context=True)
+        self.updater = Updater(bot=self.bot,
+                               use_context=True,
+                               user_sig_handler=self.exit)
         # Register API
         commands = [
             'help', 'register', 'join', 'ack', 'nack', 'stat', 'log',
@@ -52,6 +54,13 @@ class BotManager:
 
     def run(self):
         self.updater.start_polling()
+        self.updater.idle()
+
+    def exit(self, signo, stack_frame):
+        logging.info(f'Stopping bot_manager...')
+        self.updater.stop()
+        for _, bot in self.__bots.items():
+            bot.exit()
 
     def __get_chat_id(self, update):
         return update.message.chat.id
