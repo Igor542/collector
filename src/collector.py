@@ -29,8 +29,8 @@ def main():
     parser.add_argument('-v', '--verbose', action='count', default=0)
     args = parser.parse_args()
 
-    log_level = [logging.ERROR, logging.WARNING, logging.INFO,
-                 logging.DEBUG][min(args.verbose, 4)]
+    LOG_LEVELS = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+    log_level = LOG_LEVELS[min(args.verbose, len(LOG_LEVELS) - 1)]
 
     logging.basicConfig(format='%(asctime)s - %(name)s'
                         '- %(levelname)s - %(message)s',
