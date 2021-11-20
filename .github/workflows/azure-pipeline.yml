@@ -1,0 +1,8 @@
+jobs:
+  backend-testing:
+    runs-on: ubuntu-latest
+    steps:
+      - run: .github/workflows/env.sh
+      - run: python3 src/backend/test/test_db.py
+      - run: python3 src/backend/test/test_tfinance.py
+      - run: python3 src/backend/test/test_umath.py
