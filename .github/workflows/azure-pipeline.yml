@@ -1,3 +1,4 @@
+on: [push]
 jobs:
   backend-testing:
     runs-on: ubuntu-latest
