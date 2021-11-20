@@ -104,8 +104,23 @@ class Bot:
         mentioned_ids = self.__get_mentioned_ids(update)
         if len(mentioned_ids) != 1: return usage(update)
 
-        # TODO: make a call to Backend with: sender_id, mentioned_ids
-        self.__reply_unimpl(update)
+        respond = self.backend.join(sender_id, mentioned_ids[0])
+        if not respond.ok():
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
+
+    @log_info
+    def disjoin(self, update, context):
+        def usage(update):
+            self.__reply(update, 'usage: /disjoin')
+
+        if len(context.args) > 0: return usage(update)
+
+        sender_id = self.__get_sender_id(update)
+        respond = self.backend.disjoin(sender_id)
+        if not respond.ok():
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
 
     @log_info
     def ack(self, update, context):
