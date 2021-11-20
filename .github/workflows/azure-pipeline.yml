@@ -8,3 +8,9 @@ jobs:
       - run: python3 src/backend/test/test_db.py
       - run: python3 src/backend/test/test_tfinance.py
       - run: python3 src/backend/test/test_umath.py
+  yapf-compliance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: .github/workflows/env.sh
+      - run: .github/workflows/yapf.sh
