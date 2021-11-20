@@ -35,14 +35,19 @@ class BotManager:
             logging.critical(f'{s}. Exiting...')
             exit(2)
 
-        if not os.path.isfile(token_file): complain(f'Token file "{token_file}" is not found')
+        if not os.path.isfile(token_file):
+            complain(f'Token file "{token_file}" is not found')
         with open(token_file, 'r') as f:
             token = f.readlines()
 
-        if len(token) != 1: complain(f'Token file should have exactly one line (now has {len(token)})')
+        if len(token) != 1:
+            complain(
+                f'Token file should have exactly one line (now has {len(token)})'
+            )
         token = token[0].strip()
 
-        if not re.match(r'^\d+:\w+$', token): complain(f'Token has wrong format')
+        if not re.match(r'^\d+:\w+$', token):
+            complain(f'Token has wrong format')
         return token
 
     def run(self):

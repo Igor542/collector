@@ -8,6 +8,7 @@ SRC_DIR = os.path.dirname(os.path.dirname(TEST_DIR))
 sys.path.insert(0, SRC_DIR)
 import backend.umath
 
+
 def validate(state, length=None):
     ret = backend.umath.payment(state)
     if length: assert len(ret) == length
@@ -18,6 +19,7 @@ def validate(state, length=None):
     for k, v in state.items():
         assert v == 0
 
+
 def test1():
     validate([
         ('u1', 0),
@@ -25,14 +27,12 @@ def test1():
     ], 0)
 
     validate([
-        ('u1',  40),
+        ('u1', 40),
         ('u2', -35),
         ('u3', -50),
-        ('u4',  60),
+        ('u4', 60),
         ('u5', -15),
     ])
-
-
 
 
 if __name__ == '__main__':

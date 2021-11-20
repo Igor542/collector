@@ -51,6 +51,7 @@ class TFinance:
         return Ok(ret)
 
     """ returns a list of utypes.PayOffItems """
+
     def payment(self, user_id):
         users = self.db.get_all_users()
         if users.bad(): return users
@@ -65,7 +66,8 @@ class TFinance:
 
         # check that total sum is zero
         if abs(total) > 0.01:
-            return Error(STATUS.DB_CORRUPTED, error=f'grand total is non-zero: {total}')
+            return Error(STATUS.DB_CORRUPTED,
+                         error=f'grand total is non-zero: {total}')
 
         ret = backend.umath.payment(state)
         return Ok(ret)
@@ -96,12 +98,15 @@ class TFinance:
             return Error(STATUS.LOGIC_ERROR,
                          f'transaction ({tx}) does not exist')
         if tx_info.user != user_id:
-            return Error(STATUS.LOGIC_ERROR,
-                         f'''transaction ({tx}) can only be canceled by "{tx_info.user}", not by "{user_id}"''')
+            return Error(
+                STATUS.LOGIC_ERROR,
+                f'''transaction ({tx}) can only be canceled by "{tx_info.user}", not by "{user_id}"'''
+            )
 
         cancel_comment = f'cancel ({tx}) from {tx_info.time}.'
         if comment: cancel_comment += ' ' + comment
-        new_tx_id = self.db.add_transaction(user_id, -tx_info.value, cancel_comment).unpack()
+        new_tx_id = self.db.add_transaction(user_id, -tx_info.value,
+                                            cancel_comment).unpack()
 
         self.db.add_counts_with_inverse_values(tx, new_tx_id).unpack()
 
