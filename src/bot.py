@@ -92,9 +92,8 @@ class Bot:
             self.__users[sender_id] = sender_un
         respond = self.backend.register(sender_id)
         if not respond.ok():
-            self.__reply(update, respond.error)
-        else:
-            self.__reply(update, "success")
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
 
     @log_info
     def join(self, update, context):
@@ -116,8 +115,10 @@ class Bot:
         if len(context.args) > 0: return usage(update)
 
         sender_id = self.__get_sender_id(update)
-        # TODO: make a call to Backend with: sender_id
-        self.__reply_unimpl(update)
+        respond = self.backend.ack(sender_id)
+        if not respond.ok():
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
 
     @log_info
     def nack(self, update, context):
@@ -127,8 +128,10 @@ class Bot:
         if len(context.args) > 0: return usage(update)
 
         sender_id = self.__get_sender_id(update)
-        # TODO: make a call to Backend with: sender_id
-        self.__reply_unimpl(update)
+        respond = self.backend.ack(sender_id)
+        if not respond.ok():
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
 
     @log_info
     def stat(self, update, context):
@@ -140,18 +143,18 @@ class Bot:
         sender_id = self.__get_sender_id(update)
         respond = self.backend.stat(sender_id)
         if not respond.ok():
-            self.__reply(update, respond.error)
-        else:
-            stat_info = respond.unpack()
-            reply = ''
-            for user_id, value in stat_info.items():
-                username = self.__users.get(int(user_id))
-                if username is None:
-                    username = user_id
-                reply += f"@{username}: {value}\n"
-            if reply == '':
-                reply = 'No data'
-            self.__reply(update, reply)
+            return self.__reply(update, respond.error)
+
+        stat_info = respond.unpack()
+        reply = ''
+        for user_id, value in stat_info.items():
+            username = self.__users.get(int(user_id))
+            if username is None:
+                username = user_id
+            reply += f"@{username}: {value}\n"
+        if reply == '':
+            reply = 'No data'
+        self.__reply(update, reply)
 
     @log_info
     def log(self, update, context):
@@ -175,8 +178,7 @@ class Bot:
 
         respond = self.backend.log(sender_id, user_id, num_tx)
         if respond.bad():
-            self.__reply(update, respond.error)
-            return
+            return self.__reply(update, respond.error)
 
         reply = []
         for r in reversed(respond.unpack()):
@@ -198,8 +200,7 @@ class Bot:
         sender_id = self.__get_sender_id(update)
         respond = self.backend.payment(sender_id)
         if respond.bad():
-            self.__reply(update, respond.error)
-            return
+            return self.__reply(update, respond.error)
         reply = []
         for r in respond.unpack():
             src = ' @' + self.__users.get(int(r.src)) if r.src else ''
@@ -234,9 +235,8 @@ class Bot:
         # TODO: make a call to Backend with: sender_id, mentioned_ids
         respond = self.backend.add(sender_id, float(value), mentioned_ids)
         if not respond.ok():
-            self.__reply(update, respond.error)
-        else:
-            self.__reply(update, "success")
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
 
     @log_info
     def cancel(self, update, context):
@@ -253,9 +253,8 @@ class Bot:
             comment = args[1]
         respond = self.backend.cancel(sender_id, int(tx), comment)
         if not respond.ok():
-            self.__reply(update, respond.error)
-        else:
-            self.__reply(update, "success")
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
 
     @log_info
     def compensate(self, update, context):
@@ -271,9 +270,8 @@ class Bot:
             comment = arg[0]
         respond = self.backend.compensate(sender_id, comment)
         if not respond.ok():
-            self.__reply(update, respond.error)
-        else:
-            self.__reply(update, "success")
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
 
     @log_info
     def reset(self, update, context):
