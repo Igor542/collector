@@ -1,20 +1,21 @@
 import os
+import re
+import logging
 
 import telegram
 from telegram.ext import Updater, CommandHandler
-from TOKEN import TOKEN
 
 import bot
 from backend import db, tfinance
 
 
 class BotManager:
-    def __init__(self):
+    def __init__(self, token_file, data_dir):
         # Load existing chats
         # - Create a bot for each chat
 
         # Create Telegram bot
-        self.bot = telegram.Bot(token=TOKEN)
+        self.bot = telegram.Bot(token=self.__read_token(token_file))
         self.updater = Updater(bot=self.bot, use_context=True)
         # Register API
         commands = [
@@ -25,9 +26,24 @@ class BotManager:
             self.__register_command(c)
         self.__bots = dict()
         # init data directory
-        self.data_dir = os.getcwd() + '/__data'
+        self.data_dir = data_dir
         if not os.path.isdir(self.data_dir):
             os.mkdir(self.data_dir)
+
+    def __read_token(self, token_file):
+        def complain(s):
+            logging.critical(f'{s}. Exiting...')
+            exit(2)
+
+        if not os.path.isfile(token_file): complain(f'Token file "{token_file}" is not found')
+        with open(token_file, 'r') as f:
+            token = f.readlines()
+
+        if len(token) != 1: complain(f'Token file should have exactly one line (now has {len(token)})')
+        token = token[0].strip()
+
+        if not re.match(r'^\d+:\w+$', token): complain(f'Token has wrong format')
+        return token
 
     def run(self):
         self.updater.start_polling()
