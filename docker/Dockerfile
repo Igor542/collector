@@ -7,4 +7,4 @@ RUN mkdir -p /app /secrets /data && cd /app \
         && curl -L https://api.github.com/repos/Igor542/collector/tarball/$BRANCH -o - | tar -xz --strip-components=1 \
         && pip install --no-cache-dir -r requirements.txt
 
-CMD python3 /app/src/collector.py --token /secrets/TOKEN --data /storage -vvvv
+CMD ["python3", "/app/src/collector.py", "--token", "/secrets/TOKEN", "--data", "/storage", "-vvvv"]
