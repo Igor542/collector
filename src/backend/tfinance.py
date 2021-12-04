@@ -119,7 +119,37 @@ class TFinance:
         return Ok()
 
     def g_add(self, user_id, value, other_user_ids=None, comment=None):
-        return Error(STATUS.UNIMPLEMENTED)
+        user_gid = self.db.get_user_group(user_id)
+        if user_gid.bad(): return user_gid
+        user_gid = user_gid.unpack()
+
+        if not other_user_ids:
+            other_user_ids = set(self.db.get_all_users().unpack())
+        else:
+            other_user_ids = set(other_user_ids).union({user_id})
+
+        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
+
+        groups = {user_gid: [user_id]}
+        for uid in other_user_ids:
+            gid = self.db.get_user_group(uid)
+            if gid == user_gid: continue
+            if gid not in groups: groups[gid] = []
+            groups[gid].append(uid)
+
+        n_groups = len(groups) - 1 + len(groups[-1])
+        value_per_group = 1. * value / n_groups
+
+        for gid, user_ids in groups.items():
+            this_group_size = len(user_ids)
+            if gid == user_gid:
+                this_value = value - value_per_group
+            else:
+                this_value = -value_per_group / this_group_size
+            for uid in user_ids:
+                self.db.add_count(tx_id, uid, this_value).unpack()
+
+        return Ok()
 
     def cancel(self, user_id, tx, comment=None):
         tx_info = self.db.get_transaction(tx)
