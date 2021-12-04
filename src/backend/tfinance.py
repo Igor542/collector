@@ -20,7 +20,9 @@ class TFinance:
             elif isinstance(user_id, int): check_user_ids.append(user_id)
             elif isinstance(user_id, list): check_user_ids += user_id
             else:
-                raise Exception(f'TFinance.__check_register: unexpected type of user_id "{user_id}"')
+                raise Exception(
+                    f'TFinance.__check_register: unexpected type of user_id "{user_id}"'
+                )
 
         for user_id in check_user_ids:
             if user_id is None: continue
@@ -99,6 +101,7 @@ class TFinance:
         return Ok(ret)
 
     """ returns a list of utypes.PayOffItems """
+
     def payment(self, user_id):
         r = self.__check_registered(user_id)
         if r.bad(): return r

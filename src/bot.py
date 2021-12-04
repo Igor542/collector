@@ -62,7 +62,7 @@ class Bot:
         error = respond.error
         uids = re.findall("%\d+%", error)
         san_uids = [self.__users[int(uid[1:-1])] for uid in uids]
-        for i,s in zip(uids, san_uids):
+        for i, s in zip(uids, san_uids):
             error.replace(i, s)
         self.__reply(update, error)
 
