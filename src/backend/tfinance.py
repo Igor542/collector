@@ -13,21 +13,34 @@ class TFinance:
     def exit(self):
         self.db.close()
 
+    def __check_registered(self, *user_ids):
+        check_user_ids = []
+        for user_id in user_ids:
+            if user_id is None: continue
+            elif isinstance(user_id, int): check_user_ids.append(user_id)
+            elif isinstance(user_id, list): check_user_ids += user_id
+            else:
+                raise Exception(f'TFinance.__check_register: unexpected type of user_id "{user_id}"')
+
+        for user_id in check_user_ids:
+            if user_id is None: continue
+            assert isinstance(user_id, int)
+            if not self.db.has_user(user_id):
+                return Error(STATUS.LOGIC_ERROR,
+                             f'%{user_id}% is not registered')
+
+        return Ok()
+
     def register(self, user_id):
         assert isinstance(user_id, int)
         if self.db.has_user(user_id):
             return Error(STATUS.LOGIC_ERROR,
-                         f'user "{user_id}" already registered')
+                         f'%{user_id}% is already registered')
         return self.db.add_user(user_id)
 
     def join(self, user_id, other_user_id):
-        assert isinstance(user_id, int) and isinstance(other_user_id, int)
-        if not self.db.has_user(user_id):
-            return Error(STATUS.LOGIC_ERROR,
-                         f'user "{user_id}" is not registered')
-        if not self.db.has_user(other_user_id):
-            return Error(STATUS.LOGIC_ERROR,
-                         f'user "{other_user_id}" is not registered')
+        r = self.__check_registered(user_id, other_user_id)
+        if r.bad(): return r
 
         other_user_gid = self.db.get_user_group(other_user_id)
         if other_user_gid.bad(): return other_user_gid
@@ -35,10 +48,8 @@ class TFinance:
         return self.db.set_user_group(user_id, other_user_gid.unpack())
 
     def disjoin(self, user_id):
-        assert isinstance(user_id, int)
-        if not self.db.has_user(user_id):
-            return Error(STATUS.LOGIC_ERROR,
-                         f'user "{user_id}" is not registered')
+        r = self.__check_registered(user_id)
+        if r.bad(): return r
 
         user_gid = self.db.get_user_group(user_id)
         if user_gid.bad(): return user_gid
@@ -50,7 +61,7 @@ class TFinance:
 
         if len(group_users) == 1:
             return Error(STATUS.LOGIC_ERROR,
-                         f'user "{user_id}" is not in a group')
+                         f'user "%{user_id}%" is already alone :(')
 
         new_group = self.db.add_group()
         if new_group.bad(): return new_group
@@ -75,6 +86,9 @@ class TFinance:
     def log(self, user_id, other_user_id, count):
         assert isinstance(other_user_id, int) or other_user_id is None
         assert isinstance(count, int) and count > 0
+        r = self.__check_registered(user_id, other_user_id)
+        if r.bad(): return r
+
         last_tx_ids = self.db.get_last_transaction_ids(other_user_id, count)
         if last_tx_ids.bad(): return last_tx_ids
         ret = []
@@ -85,8 +99,10 @@ class TFinance:
         return Ok(ret)
 
     """ returns a list of utypes.PayOffItems """
-
     def payment(self, user_id):
+        r = self.__check_registered(user_id)
+        if r.bad(): return r
+
         users = self.db.get_all_users()
         if users.bad(): return users
         state = []
@@ -107,7 +123,8 @@ class TFinance:
         return Ok(ret)
 
     def add(self, user_id, value, other_user_ids=None, comment=None):
-        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
+        r = self.__check_registered(user_id, other_user_ids)
+        if r.bad(): return r
 
         if not other_user_ids:
             other_user_ids = set(self.db.get_all_users().unpack())
@@ -117,6 +134,8 @@ class TFinance:
         n_users = len(other_user_ids)
         value_per_user = 1. * value / n_users
 
+        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
+
         for uid in other_user_ids:
             this_value = -value_per_user + (value if uid == user_id else 0)
             self.db.add_count(tx_id, uid, this_value)
@@ -124,6 +143,9 @@ class TFinance:
         return Ok()
 
     def g_add(self, user_id, value, other_user_ids=None, comment=None):
+        r = self.__check_registered(user_id, other_user_ids)
+        if r.bad(): return r
+
         user_gid = self.db.get_user_group(user_id)
         if user_gid.bad(): return user_gid
         user_gid = user_gid.unpack()
@@ -133,8 +155,6 @@ class TFinance:
         else:
             other_user_ids = set(other_user_ids).union({user_id})
 
-        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
-
         groups = {user_gid: [user_id]}
         for uid in other_user_ids:
             gid = self.db.get_user_group(uid).unpack()
@@ -143,6 +163,8 @@ class TFinance:
             groups[gid].append(uid)
 
         value_per_group = 1. * value / len(groups)
+
+        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
 
         for gid, user_ids in groups.items():
             this_group_size = len(user_ids)
@@ -156,6 +178,9 @@ class TFinance:
         return Ok()
 
     def cancel(self, user_id, tx, comment=None):
+        r = self.__check_registered(user_id)
+        if r.bad(): return r
+
         tx_info = self.db.get_transaction(tx)
         if not tx_info:
             return Error(STATUS.LOGIC_ERROR,
@@ -163,7 +188,7 @@ class TFinance:
         if tx_info.user != user_id:
             return Error(
                 STATUS.LOGIC_ERROR,
-                f'''transaction ({tx}) can only be canceled by "{tx_info.user}", not by "{user_id}"'''
+                f'''transaction ({tx}) can only be canceled by "%{tx_info.user}%", not by "%{user_id}%"'''
             )
 
         cancel_comment = f'cancel ({tx}) from {tx_info.time}.'
@@ -176,6 +201,9 @@ class TFinance:
         return Ok()
 
     def compensate(self, user_id, comment=None):
+        r = self.__check_registered(user_id)
+        if r.bad(): return r
+
         comment = 'compensate.' + (' ' + comment if comment else '')
         tx_id = self.db.add_transaction('NULL', 0, comment)
         if tx_id.bad():
