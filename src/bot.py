@@ -70,7 +70,7 @@ class Bot:
             if e.type == 'mention':
                 user_begin = e.offset
                 user_end = user_begin + e.length
-                username = msg.text[user_begin+1:user_end]
+                username = msg.text[user_begin + 1:user_end]
                 # TODO: convert username to user_id
                 user_id = self.__get_user_id(username)
                 if user_id is None:
