@@ -1,5 +1,4 @@
-import logging
-
+import logging, re
 from backend import respond, tfinance
 
 
@@ -32,7 +31,7 @@ class Bot:
                 return func(self, update, context)
             except Exception as e:
                 logging.error(f'backend failed with exception "{str(e)}"')
-                self.__reply(update, f'BOT EXCEPTION\n"{str(e)}"')
+                self.__reply(update, f'\U0001F4A9\n"{str(e)}"')
                 return None
 
         return log
@@ -50,13 +49,24 @@ class Bot:
         return update.message.from_user.id
 
     def __get_sender_un(self, update):
-        return update.message.from_user.username
+        un = update.message.from_user.username
+        if un: return un
+        return update.message.from_user.first_name
 
     def __get_user_id(self, username):
         for key, value in self.__users.items():
             if value == username:
                 return key
         return 0
+
+    def __reply_respond(self, update, respond):
+        if respond.ok(): return self.__reply(update, "success")
+        error = respond.error
+        uids = re.findall("%\d+%", error)
+        san_uids = ['@' + self.__users[int(uid[1:-1])] for uid in uids]
+        for i, s in zip(uids, san_uids):
+            error = error.replace(i, s)
+        self.__reply(update, error)
 
     def __get_mentioned_ids(self, update):
         msg = update.message
@@ -100,9 +110,7 @@ class Bot:
         else:
             self.__users[sender_id] = sender_un
         respond = self.backend.register(sender_id)
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def join(self, update, context):
@@ -114,9 +122,7 @@ class Bot:
         if len(mentioned_ids) != 1: return usage(update)
 
         respond = self.backend.join(sender_id, mentioned_ids[0])
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def disjoin(self, update, context):
@@ -127,9 +133,7 @@ class Bot:
 
         sender_id = self.__get_sender_id(update)
         respond = self.backend.disjoin(sender_id)
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def ack(self, update, context):
@@ -140,9 +144,7 @@ class Bot:
 
         sender_id = self.__get_sender_id(update)
         respond = self.backend.ack(sender_id)
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def nack(self, update, context):
@@ -153,9 +155,7 @@ class Bot:
 
         sender_id = self.__get_sender_id(update)
         respond = self.backend.ack(sender_id)
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def stat(self, update, context):
@@ -211,6 +211,8 @@ class Bot:
             value = '' if r.value == 0 else f" {r.value}"
             reply.append(f'({r.tx_id}).{user} {value}  {comment}')
         reply = '\n'.join(reply)
+        if not reply:
+            reply = 'spend some money first'
 
         self.__reply(update, reply)
 
@@ -231,6 +233,8 @@ class Bot:
             dst = ' @' + self.__users.get(int(r.dst)) if r.dst else ''
             reply.append(f'{src} -> {dst}: {r.value}')
         reply = '\n'.join(reply)
+        if not reply:
+            reply = 'even'
 
         self.__reply(update, reply)
 
@@ -245,9 +249,7 @@ class Bot:
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
         respond = self.backend.g_add(sender_id, float(value), mentioned_ids)
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def add(self, update, context):
@@ -260,9 +262,7 @@ class Bot:
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
         respond = self.backend.add(sender_id, float(value), mentioned_ids)
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def cancel(self, update, context):
@@ -278,9 +278,7 @@ class Bot:
         if len(args) > 1:
             comment = args[1]
         respond = self.backend.cancel(sender_id, int(tx), comment)
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def compensate(self, update, context):
@@ -295,9 +293,7 @@ class Bot:
         if len(args) == 1:
             comment = arg[0]
         respond = self.backend.compensate(sender_id, comment)
-        if not respond.ok():
-            return self.__reply(update, respond.error)
-        self.__reply(update, "success")
+        self.__reply_respond(update, respond)
 
     @log_info
     def reset(self, update, context):
