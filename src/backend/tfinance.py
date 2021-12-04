@@ -61,7 +61,7 @@ class TFinance:
 
         if len(group_users) == 1:
             return Error(STATUS.LOGIC_ERROR,
-                         f'user "%{user_id}%" is already alone :(')
+                         f'%{user_id}% is already alone \U0001F62D')
 
         new_group = self.db.add_group()
         if new_group.bad(): return new_group
