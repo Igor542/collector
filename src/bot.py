@@ -28,7 +28,12 @@ class Bot:
         def log(self, update, context):
             logging.info(f'Received command: {update.message.text}')
             logging.info(f'RAW update: {update}')
-            return func(self, update, context)
+            try:
+                return func(self, update, context)
+            except Exception as e:
+                logging.error(f'backend failed with exception "{str(e)}"')
+                self.__reply(update, f'BOT EXCEPTION\n"{str(e)}"')
+                return None
 
         return log
 
@@ -65,7 +70,7 @@ class Bot:
             if e.type == 'mention':
                 user_begin = e.offset
                 user_end = user_begin + e.length
-                username = msg.text[user_begin:user_end]
+                username = msg.text[user_begin+1:user_end]
                 # TODO: convert username to user_id
                 user_id = self.__get_user_id(username)
                 if user_id is None:
@@ -236,10 +241,13 @@ class Bot:
 
         if len(context.args) < 1: return usage(update)
 
+        value = context.args[0]
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
-        # TODO: make a call to Backend with: sender_id, mentioned_ids
-        self.__reply_unimpl(update)
+        respond = self.backend.g_add(sender_id, float(value), mentioned_ids)
+        if not respond.ok():
+            return self.__reply(update, respond.error)
+        self.__reply(update, "success")
 
     @log_info
     def add(self, update, context):
@@ -251,7 +259,6 @@ class Bot:
         value = context.args[0]
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
-        # TODO: make a call to Backend with: sender_id, mentioned_ids
         respond = self.backend.add(sender_id, float(value), mentioned_ids)
         if not respond.ok():
             return self.__reply(update, respond.error)

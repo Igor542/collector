@@ -20,11 +20,11 @@ class BotManager:
                                use_context=True,
                                user_sig_handler=self.exit)
         # Register API
-        commands = [
-            'help', 'register', 'join', 'ack', 'nack', 'stat', 'log',
-            'payment', 'g_add', 'add', 'cancel', 'compensate', 'reset'
+        COMMANDS = [
+            'help', 'register', 'join', 'disjoin', 'ack', 'nack', 'stat',
+            'log', 'payment', 'g_add', 'add', 'cancel', 'compensate', 'reset'
         ]
-        for c in commands:
+        for c in COMMANDS:
             self.__register_command(c)
         self.__bots = dict()
         # init data directory
