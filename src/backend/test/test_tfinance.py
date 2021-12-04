@@ -65,5 +65,23 @@ def test1():
     t.db.close()
 
 
+def test2():
+    t = gen_tf('test_tf_2.db')
+    assert t.register(1).ok()
+    assert t.register(2).ok()
+    t.join(1, 2)
+    u1_gid = t.db.get_user_group(1)
+    assert gid1.ok()
+    u2_gid2 = t.db.get_user_group(2)
+    assert u1_gid.ok()
+    assert u1_gid.unpack() == iu2_gid.unpack()
+    t.disjoin(1)
+    u1_gid = t.db.get_user_group(1)
+    assert gid1.ok()
+    u2_gid2 = t.db.get_user_group(2)
+    assert u1_gid.ok()
+    assert u1_gid.unpack() != iu2_gid.unpack()
+
+
 if __name__ == '__main__':
     test1()

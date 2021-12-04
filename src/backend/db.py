@@ -100,9 +100,9 @@ class DB:
         ret = [elem[0] for elem in ret]
         return Ok(ret)
 
-    def get_users(self, gid):
+    def get_user_group(self, uid):
         req = f"""
-        SELECT uid FROM Users WHERE gid = {gid}
+        SELECT gid FROM Users WHERE uid = {uid}
         """
         ret = self.cur.execute(req).fetchall()
         ret = [elem[0] for elem in ret]
@@ -110,7 +110,7 @@ class DB:
 
     def add_user(self, uid):
         req = f"""
-        INSERT INTO Users VALUES ({uid}, NULL)
+        INSERT INTO Users VALUES ({uid}, -1)
         """
         self.cur.execute(req)
         return Ok()
@@ -121,9 +121,6 @@ class DB:
         self.cur.execute(req)
         return Ok()
 
-    def unset_user_group(self, uid):
-        return self.set_user_group(-1)
-
     # Groups
 
     def add_group(self):
@@ -133,12 +130,13 @@ class DB:
         self.cur.execute(req)
         return Ok()
 
-    def del_group(self, gid):
+    def get_group_users(self, gid):
         req = f"""
-        DELETE FROM Groups WHERE gid = {gid}
+        SELECT uid FROM Users WHERE gid = {gid}
         """
-        self.cur.execute(req)
-        return Ok()
+        ret = self.cur.execute(req).fetchall()
+        ret = [elem[0] for elem in ret]
+        return Ok(ret)
 
     # Transactions
 
