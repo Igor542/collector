@@ -32,7 +32,7 @@ class Bot:
                 return func(self, update, context)
             except Exception as e:
                 logging.error(f'backend failed with exception "{str(e)}"')
-                self.__reply(update, f'BOT EXCEPTION\n"{str(e)}"')
+                self.__reply(update, f'\U0001F4A9\n"{str(e)}"')
                 return None
 
         return log
