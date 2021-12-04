@@ -119,6 +119,7 @@ class DB:
 
     def set_user_group(self, uid, gid):
         req = f"""
+        UPDATE Users SET gid = {gid} WHERE uid = {uid}
         """
         self.cur.execute(req)
         return Ok()
