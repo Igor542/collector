@@ -65,5 +65,54 @@ def test1():
     t.db.close()
 
 
+def test2():
+    t = gen_tf('test_tf_2.db')
+    # Create a group of 3 users
+    assert t.register(1).ok()
+    assert t.register(2).ok()
+    assert t.register(3).ok()
+    t.join(1, 2)
+    t.join(3, 2)
+    u1_gid = t.db.get_user_group(1)
+    assert u1_gid.ok()
+    u2_gid = t.db.get_user_group(2)
+    assert u2_gid.ok()
+    assert u1_gid.unpack() == u2_gid.unpack()
+    # Kick user 1
+    assert t.disjoin(1).ok()
+    u1_gid = t.db.get_user_group(1)
+    assert u1_gid.ok()
+    u2_gid = t.db.get_user_group(2)
+    assert u2_gid.ok()
+    u3_gid = t.db.get_user_group(2)
+    assert u2_gid.ok()
+    assert u1_gid.unpack() != u2_gid.unpack()
+    assert u2_gid.unpack() == u3_gid.unpack()
+    # Try to kick the same user again
+    assert t.disjoin(1).bad()
+
+
+def test3():
+    t = gen_tf('test_tf_2.db')
+    assert t.register(1).ok()
+    assert t.register(2).ok()
+    assert t.register(3).ok()
+    t.join(1, 2)
+
+    assert t.g_add(1, 100, [2], 'tr between 1 and 2').ok()
+    res = t.stat(1).unpack()
+    assert res[1] == 0 and res[2] == 0 and res[3] == 0
+
+    assert t.g_add(1, 200, [2, 3], 'tr between 1, 2, and 3').ok()
+    res = t.stat(1).unpack()
+    assert res[1] == 100 and res[2] == 0 and res[3] == -100
+
+    assert t.g_add(3, 200, [1, 2], 'tr between 1, 2, and 3').ok()
+    res = t.stat(1).unpack()
+    assert res[1] == 50 and res[2] == -50 and res[3] == 0
+
+
 if __name__ == '__main__':
     test1()
+    test2()
+    test3()

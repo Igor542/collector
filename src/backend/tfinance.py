@@ -21,10 +21,41 @@ class TFinance:
         return self.db.add_user(user_id)
 
     def join(self, user_id, other_user_id):
-        return Error(STATUS.UNIMPLEMENTED)
+        assert isinstance(user_id, int) and isinstance(other_user_id, int)
+        if not self.db.has_user(user_id):
+            return Error(STATUS.LOGIC_ERROR,
+                         f'user "{user_id}" is not registered')
+        if not self.db.has_user(other_user_id):
+            return Error(STATUS.LOGIC_ERROR,
+                         f'user "{other_user_id}" is not registered')
+
+        other_user_gid = self.db.get_user_group(other_user_id)
+        if other_user_gid.bad(): return other_user_gid
+
+        return self.db.set_user_group(user_id, other_user_gid.unpack())
 
     def disjoin(self, user_id):
-        return Error(STATUS.UNIMPLEMENTED)
+        assert isinstance(user_id, int)
+        if not self.db.has_user(user_id):
+            return Error(STATUS.LOGIC_ERROR,
+                         f'user "{user_id}" is not registered')
+
+        user_gid = self.db.get_user_group(user_id)
+        if user_gid.bad(): return user_gid
+        user_gid = user_gid.unpack()
+
+        group_users = self.db.get_group_users(user_gid)
+        if group_users.bad(): return group_users
+        group_users = group_users.unpack()
+
+        if len(group_users) == 1:
+            return Error(STATUS.LOGIC_ERROR,
+                         f'user "{user_id}" is not in a group')
+
+        new_group = self.db.add_group()
+        if new_group.bad(): return new_group
+
+        return self.db.set_user_group(user_id, new_group.unpack())
 
     def ack(self, user_id):
         return Error(STATUS.UNIMPLEMENTED)
@@ -88,12 +119,41 @@ class TFinance:
 
         for uid in other_user_ids:
             this_value = -value_per_user + (value if uid == user_id else 0)
-            self.db.add_count(tx_id, uid, this_value).unpack()
+            self.db.add_count(tx_id, uid, this_value)
 
         return Ok()
 
     def g_add(self, user_id, value, other_user_ids=None, comment=None):
-        return Error(STATUS.UNIMPLEMENTED)
+        user_gid = self.db.get_user_group(user_id)
+        if user_gid.bad(): return user_gid
+        user_gid = user_gid.unpack()
+
+        if not other_user_ids:
+            other_user_ids = set(self.db.get_all_users().unpack())
+        else:
+            other_user_ids = set(other_user_ids).union({user_id})
+
+        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
+
+        groups = {user_gid: [user_id]}
+        for uid in other_user_ids:
+            gid = self.db.get_user_group(uid).unpack()
+            if gid == user_gid: continue
+            if gid not in groups: groups[gid] = []
+            groups[gid].append(uid)
+
+        value_per_group = 1. * value / len(groups)
+
+        for gid, user_ids in groups.items():
+            this_group_size = len(user_ids)
+            if gid == user_gid:
+                this_value = value - value_per_group
+            else:
+                this_value = -value_per_group / this_group_size
+            for uid in user_ids:
+                self.db.add_count(tx_id, uid, this_value)
+
+        return Ok()
 
     def cancel(self, user_id, tx, comment=None):
         tx_info = self.db.get_transaction(tx)

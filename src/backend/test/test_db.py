@@ -98,7 +98,26 @@ def test3():
     assert 1 in users and 2 in users
 
 
+def test4():
+    d = gen_db('test_db_4.db')
+    assert d.add_user(1).ok()
+    gid = d.get_user_group(1)
+    assert gid.ok()
+    users = d.get_group_users(gid.unpack())
+    assert users.ok()
+    assert len(users.unpack()) == 1
+    NEW_GID = 2
+    assert d.set_user_group(1, NEW_GID).ok()
+    gid = d.get_user_group(1)
+    assert gid.ok()
+    assert gid.unpack() == NEW_GID
+    users = d.get_group_users(NEW_GID)
+    assert users.ok()
+    assert len(users.unpack()) == 1
+
+
 if __name__ == '__main__':
     test1()
     test2()
     test3()
+    test4()

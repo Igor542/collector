@@ -100,12 +100,46 @@ class DB:
         ret = [elem[0] for elem in ret]
         return Ok(ret)
 
-    def add_user(self, uid):
+    def get_user_group(self, uid):
         req = f"""
-        INSERT INTO Users VALUES ({uid}, NULL)
+        SELECT gid FROM Users WHERE uid = {uid}
+        """
+        ret = self.cur.execute(req).fetchone()
+        return Ok(ret[0])
+
+    def add_user(self, uid):
+        r = self.add_group()
+        if r.bad(): return r
+        gid = r.unpack()
+        req = f"""
+        INSERT INTO Users VALUES ({uid}, {gid})
         """
         self.cur.execute(req)
         return Ok()
+
+    def set_user_group(self, uid, gid):
+        req = f"""
+        UPDATE Users SET gid = {gid} WHERE uid = {uid}
+        """
+        self.cur.execute(req)
+        return Ok()
+
+    # Groups
+
+    def add_group(self):
+        req = f"""
+        INSERT Into Groups VALUES (NULL)
+        """
+        self.cur.execute(req)
+        return Ok(self.cur.lastrowid)
+
+    def get_group_users(self, gid):
+        req = f"""
+        SELECT uid FROM Users WHERE gid = {gid}
+        """
+        ret = self.cur.execute(req).fetchall()
+        ret = [elem[0] for elem in ret]
+        return Ok(ret)
 
     # Transactions
 
@@ -162,7 +196,7 @@ class DB:
         SELECT SUM(value) FROM Counts WHERE user={user_id}
         """
         _ = self.cur.execute(req).fetchone()
-        if _: return Ok(_[0])
+        if _: return Ok(_[0] if _[0] else 0)
         return Error(STATUS.OTHER_ERROR,
                      error=f'db:get_user_count_value(user_id={user_id})')
 
