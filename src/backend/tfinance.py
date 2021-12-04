@@ -50,7 +50,7 @@ class TFinance:
                          f'user "{user_id}" is not in a group')
         new_group = self.db.add_group()
         if new_group.bad(): return new_group
-        return self.db.set_user_group(new_group.unpack())
+        return self.db.set_user_group(user_id, new_group.unpack())
 
     def ack(self, user_id):
         return Error(STATUS.UNIMPLEMENTED)

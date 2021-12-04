@@ -67,21 +67,31 @@ def test1():
 
 def test2():
     t = gen_tf('test_tf_2.db')
+    # Create a group of 3 users
     assert t.register(1).ok()
     assert t.register(2).ok()
+    assert t.register(3).ok()
     t.join(1, 2)
+    t.join(3, 2)
     u1_gid = t.db.get_user_group(1)
-    assert gid1.ok()
-    u2_gid2 = t.db.get_user_group(2)
     assert u1_gid.ok()
-    assert u1_gid.unpack() == iu2_gid.unpack()
-    t.disjoin(1)
+    u2_gid = t.db.get_user_group(2)
+    assert u2_gid.ok()
+    assert u1_gid.unpack() == u2_gid.unpack()
+    # Kick user 1
+    assert t.disjoin(1).ok()
     u1_gid = t.db.get_user_group(1)
-    assert gid1.ok()
-    u2_gid2 = t.db.get_user_group(2)
     assert u1_gid.ok()
-    assert u1_gid.unpack() != iu2_gid.unpack()
+    u2_gid = t.db.get_user_group(2)
+    assert u2_gid.ok()
+    u3_gid = t.db.get_user_group(2)
+    assert u2_gid.ok()
+    assert u1_gid.unpack() != u2_gid.unpack()
+    assert u2_gid.unpack() == u3_gid.unpack()
+    # Try to kick the same user again
+    assert t.disjoin(1).bad()
 
 
 if __name__ == '__main__':
     test1()
+    test2()
