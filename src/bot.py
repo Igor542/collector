@@ -49,7 +49,9 @@ class Bot:
         return update.message.from_user.id
 
     def __get_sender_un(self, update):
-        return update.message.from_user.username
+        un = update.message.from_user.username
+        if un: return un
+        return update.message.from_user.first_name
 
     def __get_user_id(self, username):
         for key, value in self.__users.items():
@@ -61,9 +63,9 @@ class Bot:
         if respond.ok(): return self.__reply(update, "success")
         error = respond.error
         uids = re.findall("%\d+%", error)
-        san_uids = [self.__users[int(uid[1:-1])] for uid in uids]
+        san_uids = ['@' + self.__users[int(uid[1:-1])] for uid in uids]
         for i, s in zip(uids, san_uids):
-            error.replace(i, s)
+            error = error.replace(i, s)
         self.__reply(update, error)
 
     def __get_mentioned_ids(self, update):
@@ -209,6 +211,8 @@ class Bot:
             value = '' if r.value == 0 else f" {r.value}"
             reply.append(f'({r.tx_id}).{user} {value}  {comment}')
         reply = '\n'.join(reply)
+        if not reply:
+            reply = 'spend some money first'
 
         self.__reply(update, reply)
 
@@ -229,6 +233,8 @@ class Bot:
             dst = ' @' + self.__users.get(int(r.dst)) if r.dst else ''
             reply.append(f'{src} -> {dst}: {r.value}')
         reply = '\n'.join(reply)
+        if not reply:
+            reply = 'even'
 
         self.__reply(update, reply)
 
