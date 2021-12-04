@@ -21,40 +21,36 @@ class TFinance:
         return self.db.add_user(user_id)
 
     def join(self, user_id, other_user_id):
-        assert isinstance(user_id, int)
+        assert isinstance(user_id, int) and isinstance(other_user_id, int)
         if not self.db.has_user(user_id):
             return Error(STATUS.LOGIC_ERROR,
                          f'user "{user_id}" is not registered')
-        assert isinstance(other_user_id, int)
         if not self.db.has_user(other_user_id):
             return Error(STATUS.LOGIC_ERROR,
                          f'user "{other_user_id}" is not registered')
-        respond = self.db.get_user_group(other_user_id)
-        if respond.bad(): return respond
-        new_gid = respond.unpack()
-        respond = self.db.set_user_group(user_id, new_gid)
-        if respond.bad(): return respond
-        return Ok()
+        other_user_gid = self.db.get_user_group(other_user_id)
+        if other_user_gid.bad(): return other_user_gid
+
+        return self.db.set_user_group(user_id, other_user_gid.unpack())
 
     def disjoin(self, user_id):
         assert isinstance(user_id, int)
         if not self.db.has_user(user_id):
             return Error(STATUS.LOGIC_ERROR,
                          f'user "{user_id}" is not registered')
-        respond = self.db.get_user_group(user_id)
-        if respond.bad(): return respond
-        gid = respond.unpack()
-        respond = self.db.get_group_users(gid)
-        if respond.bad(): return respond
-        users = respond.unpack()
-        if len(users) == 1:
+        user_gid = self.db.get_user_group(user_id)
+        if user_gid.bad(): return user_gid
+
+        user_gid = user_gid.unpack()
+        group_users = self.db.get_group_users(user_gid)
+        if group_users.bad(): return group_users
+        group_users = group_users.unpack()
+        if len(group_users) == 1:
             return Error(STATUS.LOGIC_ERROR,
                          f'user "{user_id}" is not in a group')
-        respond = self.db.add_group()
-        if respond.bad(): return respond
-        respond = self.db.set_user_group(respond.unpack())
-        if respond.bad(): return respond
-        return Ok()
+        new_group = self.db.add_group()
+        if new_group.bad(): return new_group
+        return self.db.set_user_group(new_group.unpack())
 
     def ack(self, user_id):
         return Error(STATUS.UNIMPLEMENTED)
