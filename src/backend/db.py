@@ -196,7 +196,7 @@ class DB:
         SELECT SUM(value) FROM Counts WHERE user={user_id}
         """
         _ = self.cur.execute(req).fetchone()
-        if _: return Ok(_[0])
+        if _: return Ok(_[0] if _[0] else 0)
         return Error(STATUS.OTHER_ERROR,
                      error=f'db:get_user_count_value(user_id={user_id})')
 

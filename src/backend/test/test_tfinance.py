@@ -92,6 +92,27 @@ def test2():
     assert t.disjoin(1).bad()
 
 
+def test3():
+    t = gen_tf('test_tf_2.db')
+    assert t.register(1).ok()
+    assert t.register(2).ok()
+    assert t.register(3).ok()
+    t.join(1, 2)
+
+    assert t.g_add(1, 100, [2], 'tr between 1 and 2').ok()
+    res = t.stat(1).unpack()
+    assert res[1] == 0 and res[2] == 0 and res[3] == 0
+
+    assert t.g_add(1, 200, [2, 3], 'tr between 1, 2, and 3').ok()
+    res = t.stat(1).unpack()
+    assert res[1] == 100 and res[2] == 0 and res[3] == -100
+
+    assert t.g_add(3, 200, [1, 2], 'tr between 1, 2, and 3').ok()
+    res = t.stat(1).unpack()
+    assert res[1] == 50 and res[2] == -50 and res[3] == 0
+
+
 if __name__ == '__main__':
     test1()
     test2()
+    test3()
