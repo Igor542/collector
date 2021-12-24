@@ -53,7 +53,9 @@ class Bot:
         if un: return un
         return update.message.from_user.first_name
 
-    def __get_user_id(self, username):
+    def __get_user_id(self, username, sender=None):
+        if username == 'me' and sender is not None:
+            username = sender
         for key, value in self.__users.items():
             if value == username:
                 return key
@@ -192,13 +194,19 @@ class Bot:
         user_id = None  # default for all users
         num_tx = 10  # default number of transactions
         if len(words) > 2:
+            # /log @user | me num_tx
+            user_id = self.__get_user_id(words[1])
+            if user_id == 0: return usage(update)
             num_tx = int(words[2])
-            if words[1].startswith('@'):
-                user_id = self.__get_mentioned_ids(update)[0]
-            elif words[1] == 'me':
-                user_id = sender_id
+        elif len(words) > 1:
+            is_arg_tx = isinstance(words[1], int)
+            if is_arg_tx:
+                # /log num_tx
+                num_tx = int(words[1])
             else:
-                return usage(update)
+                # /log @user | me
+                user_id = self.__get_user_id(words[1])
+                if user_id == 0: return usage(update)
 
         respond = self.backend.log(sender_id, user_id, num_tx)
         if respond.bad():
