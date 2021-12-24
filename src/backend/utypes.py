@@ -13,6 +13,19 @@ class Transaction:
         print(str(self))
 
 
+class Count:
+    def __init__(self, tx_id, user, value):
+        self.tx_id = tx_id
+        self.user = user
+        self.value = value
+
+    def __str__(self):
+        return f'count:{{id:{self.tx_id}, user:{self.user}, value:{self.value}}}'
+
+    def __repr__(self):
+        print(str(self))
+
+
 class PayOffItem:
     def __init__(self, src, dst, value):
         self.src = src

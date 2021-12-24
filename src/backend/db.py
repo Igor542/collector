@@ -182,6 +182,40 @@ class DB:
         ret = [elem[0] for elem in ret]
         return Ok(ret)
 
+    def get_transaction_range_by_date(self, date_range):
+        assert isinstance(date_range, list)
+        tx_range = []
+
+        maybe_constrain = ''
+        if date_range[0]:
+            maybe_constrain = f"WHERE time >= '{date_range[0]}'"
+
+        req = f"""
+        SELECT MIN(tx_id) FROM Transactions {maybe_constrain}
+        """
+        _ = self.cur.execute(req).fetchone()
+        if not _:
+            return Error(
+                STATUS.OTHER_ERROR,
+                error=f'db:get_transaction_range_by_date({date_range}). min')
+        tx_range.append(_[0])
+
+        maybe_constrain = ''
+        if date_range[1]:
+            maybe_constrain = f"WHERE time <= '{date_range[1]} 23:59:59'"
+
+        req = f"""
+        SELECT MAX(tx_id) FROM Transactions {maybe_constrain}
+        """
+        _ = self.cur.execute(req).fetchone()
+        if not _:
+            return Error(
+                STATUS.OTHER_ERROR,
+                error=f'db:get_transaction_range_by_date({date_range}). max')
+        tx_range.append(_[0])
+
+        return Ok(tx_range)
+
     # Counts
 
     def add_count(self, tx_id, user_id, value):
@@ -190,6 +224,16 @@ class DB:
         """
         self.cur.execute(req)
         return Ok()
+
+    def get_counts(self, tx_id):
+        req = f"""
+        SELECT user, value FROM Counts WHERE tx_id = {tx_id}
+        """
+        ret = []
+        counts = self.cur.execute(req).fetchall()
+        for count in counts:
+            ret.append(Count(tx_id, count[0], count[1]))
+        return Ok(ret)
 
     def get_user_count_value(self, user_id):
         req = f"""
@@ -201,15 +245,10 @@ class DB:
                      error=f'db:get_user_count_value(user_id={user_id})')
 
     def add_counts_with_inverse_values(self, cancel_tx, new_tx):
-        req = f"""
-        SELECT user, value FROM Counts WHERE tx_id = {cancel_tx}
-        """
-        counts = self.cur.execute(req).fetchall()
+        counts = self.get_counts(cancel_tx).unpack()
         for count in counts:
-            user = count[0]
-            value = -count[1]
             req = f"""
-            INSERT INTO Counts VALUES ({new_tx}, {user}, {value})
+            INSERT INTO Counts VALUES ({new_tx}, {count.user}, {-count.value})
             """
             self.cur.execute(req)
         return Ok()
