@@ -208,8 +208,8 @@ class TFinance:
         r = self.__check_registered(user_id)
         if r.bad(): return r
 
-        comment = 'compensate.' + (' ' + comment if comment else '')
-        tx_id = self.db.add_transaction('NULL', 0, comment)
+        comment = 'compensate' + ('. ' + comment if comment else '')
+        tx_id = self.db.add_transaction(user_id, 0, comment)
         if tx_id.bad():
             return tx_id
         else:
