@@ -267,7 +267,8 @@ class Bot:
         mentioned_ids = self.__get_mentioned_ids(update)
         comment_start = Bot.find_comment_start_pos(update.message.text)
         lcomment = context.args[comment_start:]
-        respond = self.backend.g_add(sender_id, float(value), mentioned_ids, ' '.join(lcomment))
+        respond = self.backend.g_add(sender_id, float(value), mentioned_ids,
+                                     ' '.join(lcomment))
         self.__reply_respond(update, respond)
 
     @log_info
@@ -282,7 +283,8 @@ class Bot:
         mentioned_ids = self.__get_mentioned_ids(update)
         comment_start = Bot.find_comment_start_pos(update.message.text)
         lcomment = context.args[comment_start:]
-        respond = self.backend.add(sender_id, float(value), mentioned_ids, ' '.join(lcomment))
+        respond = self.backend.add(sender_id, float(value), mentioned_ids,
+                                   ' '.join(lcomment))
         self.__reply_respond(update, respond)
 
     @log_info
