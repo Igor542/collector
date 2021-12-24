@@ -317,9 +317,3 @@ class Bot:
             comment = arg[0]
         respond = self.backend.compensate(sender_id, comment)
         self.__reply_respond(update, respond)
-
-    @log_info
-    def reset(self, update, context):
-        sender_id = self.__get_sender_id(update)
-        # TODO: make a call to Backend with: sender_id
-        self.__reply_unimpl(update)

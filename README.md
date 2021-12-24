@@ -15,7 +15,6 @@ Command                                 | acK | Description
 `/[g_]add <value> [@user...] [comment]` |     | Register `value` spending across all or mention users. `g_` modifier to split between groups instead of users. <br> Ex: `/add 10.3 @u1 @u2 Dinner`
 `/cancel <tx> [comment]`                |  +  | Cancel `tx` transaction (see `/log`). <br> Ex: `/cancel 13 no surfing`
 `/compensate [comment]`                 |  +  | Register pay-off between all users.
-`/reset`                                |  +  | Full reset.
 
 ## Model
 

@@ -22,7 +22,7 @@ class BotManager:
         # Register API
         COMMANDS = [
             'help', 'register', 'join', 'disjoin', 'ack', 'nack', 'stat',
-            'log', 'payment', 'g_add', 'add', 'cancel', 'compensate', 'reset'
+            'log', 'payment', 'g_add', 'add', 'cancel', 'compensate'
         ]
         for c in COMMANDS:
             self.__register_command(c)
