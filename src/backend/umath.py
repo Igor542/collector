@@ -23,7 +23,7 @@ def payment(state):
         state_sort(state)
 
         dept = -state[0][1]
-        if dept == 0: break
+        if abs(dept) < 1e-6: break
 
         for i in range(length):
             j = length - 1 - i
