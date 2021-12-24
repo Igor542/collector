@@ -1,6 +1,12 @@
 import logging, re
 from backend import respond, tfinance
+from telegram import ParseMode
 
+log_format = 'table'
+try:
+    import prettytable as pt
+except:
+    log_format = 'legacy'
 
 class Bot:
     def __init__(self, bot, chat_id, backend):
@@ -44,6 +50,9 @@ class Bot:
 
     def __reply(self, update, message):
         update.message.reply_text(message)
+
+    def __reply_table(self, update, table):
+        update.message.reply_text(f'```{table}```', parse_mode=ParseMode.MARKDOWN_V2)
 
     def __get_sender_id(self, update):
         return update.message.from_user.id
@@ -211,17 +220,29 @@ class Bot:
         if respond.bad():
             return self.__reply(update, respond.error)
 
-        reply = []
-        for r in reversed(respond.unpack()):
-            user = ' @' + self.__users.get(int(r.user)) if r.user else ''
-            comment = ' ' + r.comment if r.comment else ''
-            value = '' if r.value == 0 else f" {r.value:.2f}"
-            reply.append(f'({r.tx_id}).{user} {value}  {comment}')
-        reply = '\n'.join(reply)
-        if not reply:
-            reply = 'spend some money first'
+        if len(respond.unpack()) == 0:
+            return self.__reply(update, 'spend some money first')
 
-        self.__reply(update, reply)
+        if log_format == 'table':
+            columns = ['Username', 'Value', 'Comment']
+            table = pt.PrettyTable(columns)
+            for c in columns: table.align[c] = 'l'
+
+            for r in reversed(respond.unpack()):
+                user = ' @' + self.__users.get(int(r.user)) if r.user else ''
+                comment = ' ' + r.comment if r.comment else ''
+                value = '' if r.value == 0 else f" {r.value:.2f}"
+                table.add_row([user, f'{value}', comment])
+            self.__reply_table(update, table)
+        else:
+            reply = []
+            for r in reversed(respond.unpack()):
+                user = ' @' + self.__users.get(int(r.user)) if r.user else ''
+                comment = ' ' + r.comment if r.comment else ''
+                value = '' if r.value == 0 else f" {r.value:.2f}"
+                reply.append(f'({r.tx_id}).{user} {value}  {comment}')
+            reply = '\n'.join(reply)
+            return self.__reply(update, reply)
 
     @log_info
     def payment(self, update, context):
