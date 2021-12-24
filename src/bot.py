@@ -53,9 +53,10 @@ class Bot:
         if un: return un
         return update.message.from_user.first_name
 
-    def __get_user_id(self, username, sender=None):
-        if username == 'me' and sender is not None:
-            username = sender
+    def __get_user_id(self, username, sender_id=None):
+        if username.startswith('@'): username = username[1:]
+        if username == 'me' and sender_id is not None:
+            return sender_id
         for key, value in self.__users.items():
             if value == username:
                 return key
@@ -83,9 +84,8 @@ class Bot:
                 user_begin = e.offset
                 user_end = user_begin + e.length
                 username = msg.text[user_begin + 1:user_end]
-                # TODO: convert username to user_id
                 user_id = self.__get_user_id(username)
-                if user_id is None:
+                if user_id == 0:
                     user_id = -1
                 mentioned_ids.append(user_id)
         return mentioned_ids
@@ -195,7 +195,7 @@ class Bot:
         num_tx = 10  # default number of transactions
         if len(words) > 2:
             # /log @user | me num_tx
-            user_id = self.__get_user_id(words[1])
+            user_id = self.__get_user_id(words[1], sender_id)
             if user_id == 0: return usage(update)
             num_tx = int(words[2])
         elif len(words) > 1:
@@ -205,7 +205,7 @@ class Bot:
                 num_tx = int(words[1])
             else:
                 # /log @user | me
-                user_id = self.__get_user_id(words[1])
+                user_id = self.__get_user_id(words[1], sender_id)
                 if user_id == 0: return usage(update)
 
         respond = self.backend.log(sender_id, user_id, num_tx)
