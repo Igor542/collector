@@ -199,8 +199,7 @@ class Bot:
             if user_id == 0: return usage(update)
             num_tx = int(words[2])
         elif len(words) > 1:
-            is_arg_tx = isinstance(words[1], int)
-            if is_arg_tx:
+            if words[1].isnumeric():
                 # /log num_tx
                 num_tx = int(words[1])
             else:
