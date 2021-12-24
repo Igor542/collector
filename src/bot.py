@@ -177,7 +177,7 @@ class Bot:
             username = self.__users.get(int(user_id))
             if username is None:
                 username = user_id
-            reply += f"@{username}: {value:.3g}\n"
+            reply += f"@{username}: {value:.2f}\n"
         if reply == '':
             reply = 'No data'
         self.__reply(update, reply)
@@ -216,7 +216,7 @@ class Bot:
         for r in reversed(respond.unpack()):
             user = ' @' + self.__users.get(int(r.user)) if r.user else ''
             comment = ' ' + r.comment if r.comment else ''
-            value = '' if r.value == 0 else f" {r.value:.3g}"
+            value = '' if r.value == 0 else f" {r.value:.2f}"
             reply.append(f'({r.tx_id}).{user} {value}  {comment}')
         reply = '\n'.join(reply)
         if not reply:
@@ -239,7 +239,7 @@ class Bot:
         for r in respond.unpack():
             src = ' @' + self.__users.get(int(r.src)) if r.src else ''
             dst = ' @' + self.__users.get(int(r.dst)) if r.dst else ''
-            reply.append(f'{src} -> {dst}: {r.value:.3g}')
+            reply.append(f'{src} -> {dst}: {r.value:.2f}')
         reply = '\n'.join(reply)
         if not reply:
             reply = 'even'
