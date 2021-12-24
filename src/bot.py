@@ -245,6 +245,16 @@ class Bot:
 
         self.__reply(update, reply)
 
+    @staticmethod
+    def find_comment_start_pos(text):
+        words = text.split(' ')
+        pos = 0
+        for w in words[1:]:
+            if not w.isnumeric() and not w.startswith('@'):
+                return pos
+            pos += 1
+        return pos
+
     @log_info
     def g_add(self, update, context):
         def usage(update):
@@ -255,7 +265,9 @@ class Bot:
         value = context.args[0]
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
-        respond = self.backend.g_add(sender_id, float(value), mentioned_ids)
+        comment_start = Bot.find_comment_start_pos(update.message.text)
+        lcomment = context.args[comment_start:]
+        respond = self.backend.g_add(sender_id, float(value), mentioned_ids, ' '.join(lcomment))
         self.__reply_respond(update, respond)
 
     @log_info
@@ -268,7 +280,9 @@ class Bot:
         value = context.args[0]
         sender_id = self.__get_sender_id(update)
         mentioned_ids = self.__get_mentioned_ids(update)
-        respond = self.backend.add(sender_id, float(value), mentioned_ids)
+        comment_start = Bot.find_comment_start_pos(update.message.text)
+        lcomment = context.args[comment_start:]
+        respond = self.backend.add(sender_id, float(value), mentioned_ids, ' '.join(lcomment))
         self.__reply_respond(update, respond)
 
     @log_info
