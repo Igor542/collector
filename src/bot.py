@@ -216,7 +216,7 @@ class Bot:
             user = ' @' + self.__users.get(int(r.user)) if r.user else ''
             comment = ' ' + r.comment if r.comment else ''
             value = '' if r.value == 0 else f" {r.value:.2f}"
-            reply.append(f'({r.tx_id}).{user} {value}  {comment}')
+            reply.append(f'{r.time}: ({r.tx_id}).{user} {value}  {comment}')
         reply = '\n'.join(reply)
         if not reply:
             reply = 'spend some money first'
