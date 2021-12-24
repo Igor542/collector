@@ -85,6 +85,48 @@ class TFinance:
             ret[user] = value.unpack()
         return Ok(ret)
 
+    def spent(self, user_id, is_cash, tx_range, date_range):
+        print(f'@@@ spent({user_id}, {is_cash}, {tx_range}, {date_range}')
+
+        if date_range:
+            if tx_range:
+                return ERROR(STATUS.LOGIC_ERROR,
+                             f'spent takes only date or tx range, not both')
+            tx_range = self.db.get_transaction_range_by_date(date_range)
+            if tx_range.bad(): return tx_range
+
+            date_range = None
+            tx_range = tx_range.unpack()
+
+        if tx_range is None:
+            tx_range = [1, None]
+
+        if tx_range[1] is None:
+            last_tx = self.db.get_last_transaction_ids(None, 1)
+            if last_tx.bad(): return last_tx
+            tx_range[1] = last_tx.unpack()[0]
+
+        print(f'@@@ spent: resulting tx_range:{tx_range}')
+
+        users = self.db.get_all_users()
+        if users.bad(): return users
+        ret = {user: 0 for user in users.unpack()}
+
+        for tx_id in range(*tx_range):
+            tx = self.db.get_transaction(tx_id)
+            if not tx or tx.value == 0: continue
+            if is_cash:
+                ret[tx.user] += tx.value
+            else:
+                counts = self.db.get_counts(tx.tx_id)
+                if counts.bad(): return counts
+                for count in counts.unpack():
+                    value = -count.value
+                    if count.user == tx.user: value += tx.value
+                    ret[count.user] += value
+
+        return Ok(ret)
+
     def log(self, user_id, other_user_id, count):
         assert isinstance(other_user_id, int) or other_user_id is None
         assert isinstance(count, int) and count > 0

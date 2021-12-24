@@ -17,6 +17,7 @@ class Bot:
                 username = member.user.username
                 if username is None:
                     username = member.user.first_name
+                print(f'@@@ {username} --> {uid}')
                 self.__users[int(uid)] = username
 
     def exit(self):
@@ -178,8 +179,50 @@ class Bot:
             if username is None:
                 username = user_id
             reply += f"@{username}: {value:.2f}\n"
-        if reply == '':
-            reply = 'No data'
+
+        self.__reply(update, reply if reply else 'No data')
+
+    @log_info
+    def spent(self, update, context):
+        def usage(update):
+            usage1 = '/spent [c] [<date_from>] [<date_to>]'
+            usage2 = '/spent [c] [<tx_from>] [<tx_to>]'
+            self.__reply(update, f'usage:\n {usage1}\n {usage2}')
+
+        if len(context.args) > 3: return usage(update)
+
+        is_cash = len(context.args) >= 1 and context.args[0] == 'c'
+        date_range = [None, None]
+        tx_range = [None, None]
+
+        range_args = context.args[(1 if is_cash else 0):]
+        for idx in [0, 1]:
+            if len(range_args) > idx:
+                if range_args[idx].isnumeric():
+                    tx_range[idx] = int(range_args[idx])
+                else:
+                    date_range[idx] = range_args[idx]
+
+        if date_range[0] is None and date_range[1] is None: date_range = None
+        if tx_range[0] is None and tx_range[1] is None: tx_range = None
+
+        sender_id = self.__get_sender_id(update)
+        respond = self.backend.spent(sender_id, is_cash, tx_range, date_range)
+        if not respond.ok():
+            return self.__reply(update, respond.error)
+
+        spent_info = respond.unpack()
+        reply = 'Cash spending:' if is_cash else 'Spending:'
+
+        if len(spent_info) == 0:
+            self.__reply(update, reply + ' nothing')
+            return
+
+        for user_id, value in spent_info.items():
+            username = self.__users.get(int(user_id))
+            if username is None:
+                username = user_id
+            reply += f"\n@{username}: {value:.2f}"
         self.__reply(update, reply)
 
     @log_info
