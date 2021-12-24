@@ -237,8 +237,8 @@ class Bot:
             return self.__reply(update, respond.error)
         reply = []
         for r in respond.unpack():
-            src = ' @' + self.__users.get(int(r.src)) if r.src else ''
-            dst = ' @' + self.__users.get(int(r.dst)) if r.dst else ''
+            src = '@' + self.__users.get(int(r.src)) if r.src else ''
+            dst = '@' + self.__users.get(int(r.dst)) if r.dst else ''
             reply.append(f'{src} -> {dst}: {r.value:.2f}')
         reply = '\n'.join(reply)
         if not reply:
