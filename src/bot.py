@@ -173,14 +173,17 @@ class Bot:
             return self.__reply(update, respond.error)
 
         stat_info = respond.unpack()
-        reply = ''
+        reply = 'Current balance:'
+        if len(stat_info) == 0:
+            self.__reply(update, reply + ' total zero')
+            return
+
         for user_id, value in stat_info.items():
             username = self.__users.get(int(user_id))
             if username is None:
                 username = user_id
-            reply += f"@{username}: {value:.2f}\n"
-
-        self.__reply(update, reply if reply else 'No data')
+            reply += f"\n @{username}: {value:.2f}"
+        self.__reply(update, reply)
 
     @log_info
     def spent(self, update, context):
