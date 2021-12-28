@@ -5,6 +5,7 @@ import backend.umath
 
 
 class TFinance:
+
     def __init__(self, db):
         assert isinstance(db, backend.db.DB)
         assert db.ready()

@@ -26,6 +26,7 @@ def status_to_str(status):
 
 
 class Respond:
+
     def __init__(self, status, **kwargs):
         assert isinstance(status, int)
 
@@ -66,11 +67,13 @@ class Respond:
 
 
 class Ok(Respond):
+
     def __init__(self, obj=None):
         super().__init__(STATUS.OK, obj=obj)
 
 
 class Error(Respond):
+
     def __init__(self, status, error=''):
         assert status != STATUS.OK
         super().__init__(status, error=error)
