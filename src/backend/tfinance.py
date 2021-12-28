@@ -113,7 +113,7 @@ class TFinance:
         if users.bad(): return users
         ret = {user: 0 for user in users.unpack()}
 
-        for tx_id in range(*tx_range):
+        for tx_id in range(tx_range[0], tx_range[1] + 1):
             tx = self.db.get_transaction(tx_id)
             if not tx or tx.value == 0: continue
             if is_cash:
