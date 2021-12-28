@@ -5,6 +5,7 @@ from bot_manager import BotManager
 
 
 class Collector:
+
     def __init__(self, token_file, data_dir):
         self.bot_manager = BotManager(token_file, data_dir)
 

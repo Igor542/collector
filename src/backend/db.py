@@ -15,6 +15,7 @@ def sql_decorator(x):
 
 
 class DB:
+
     def __init__(self):
         self.db_path = None
         self.__ready = False

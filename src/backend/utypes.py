@@ -1,4 +1,5 @@
 class Transaction:
+
     def __init__(self, tx_id, time, user, value, comment):
         self.tx_id = tx_id
         self.time = time
@@ -14,6 +15,7 @@ class Transaction:
 
 
 class Count:
+
     def __init__(self, tx_id, user, value):
         self.tx_id = tx_id
         self.user = user
@@ -27,6 +29,7 @@ class Count:
 
 
 class PayOffItem:
+
     def __init__(self, src, dst, value):
         self.src = src
         self.dst = dst

@@ -10,6 +10,7 @@ from backend import db, tfinance
 
 
 class BotManager:
+
     def __init__(self, token_file, data_dir):
         # Load existing chats
         # - Create a bot for each chat
@@ -45,6 +46,7 @@ class BotManager:
             os.mkdir(self.data_dir)
 
     def __read_token(self, token_file):
+
         def complain(s):
             logging.critical(f'{s}. Exiting...')
             exit(2)

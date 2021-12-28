@@ -3,6 +3,7 @@ from backend import respond, tfinance
 
 
 class Bot:
+
     def __init__(self, bot, chat_id, backend):
         self.bot = bot
         self.chat_id = chat_id
@@ -25,6 +26,7 @@ class Bot:
         self.backend.exit()
 
     def log_info(func):
+
         def log(self, update, context):
             logging.info(f'Received command: {update.message.text}')
             logging.info(f'RAW update: {update}')
@@ -99,6 +101,7 @@ class Bot:
 
     @log_info
     def register(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /register')
 
@@ -117,6 +120,7 @@ class Bot:
 
     @log_info
     def join(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /join @user')
 
@@ -129,6 +133,7 @@ class Bot:
 
     @log_info
     def disjoin(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /disjoin')
 
@@ -140,6 +145,7 @@ class Bot:
 
     @log_info
     def ack(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /ack')
 
@@ -151,6 +157,7 @@ class Bot:
 
     @log_info
     def nack(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /ack')
 
@@ -162,6 +169,7 @@ class Bot:
 
     @log_info
     def stat(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /stat')
 
@@ -187,6 +195,7 @@ class Bot:
 
     @log_info
     def spent(self, update, context):
+
         def usage(update):
             usage1 = '/spent [c] [<date_from>] [<date_to>]'
             usage2 = '/spent [c] [<tx_from>] [<tx_to>]'
@@ -230,6 +239,7 @@ class Bot:
 
     @log_info
     def log(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /log [@user | me] [num_tx]')
 
@@ -271,6 +281,7 @@ class Bot:
 
     @log_info
     def payment(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /payment')
 
@@ -303,6 +314,7 @@ class Bot:
 
     @log_info
     def g_add(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /g_add <value> [@user...] [comment]')
 
@@ -319,6 +331,7 @@ class Bot:
 
     @log_info
     def add(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /add <value> [@user...] [comment]')
 
@@ -335,6 +348,7 @@ class Bot:
 
     @log_info
     def cancel(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /cancel <tx> [comment]')
 
@@ -351,6 +365,7 @@ class Bot:
 
     @log_info
     def compensate(self, update, context):
+
         def usage(update):
             self.__reply(update, 'usage: /compensate [comment]')
 
