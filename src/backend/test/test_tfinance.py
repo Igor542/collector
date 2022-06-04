@@ -93,7 +93,7 @@ def test2():
 
 
 def test3():
-    t = gen_tf('test_tf_2.db')
+    t = gen_tf('test_tf_3.db')
     assert t.register(1).ok()
     assert t.register(2).ok()
     assert t.register(3).ok()
