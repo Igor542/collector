@@ -4,19 +4,19 @@ Simple telegram chat bot to track money spending and help with payments.
 
 ## Commands (prototype)
 
-Command                                    | acK | Description
------------------------------------------- | --- | ------------
-`/register`                                |     | Register a user.
-`/join @user` / `/disjoin`                 |  +  | Form a group of users. All transactions are split between users in one group. <br> Ex: `/join @u3`
-`/ack` / `/nack`                           |     | Agree / disagree with the last command.
-`/stat`                                    |     | Show current statistics.
-`/spent [<tx/date_from> [<tx/date_to>]]`   |     | Show logical spending between dates or transactions.
-`/spent c [<tx/date_from> [<tx/date_to>]]` |     | Show cash (real) spending between dates or transactions.
-`/log [@user or me] [num_tx]`              |     | Show last `num_tx` transactions (must be positive integer number, default: 10) for a given @user, self (`me`), or all if omitted. <br> Ex: `/log me 10`.
-`/payment`                                 |     | Show pay-offs.
-`/[g_]add <value> [@user...] [comment]`    |     | Register `value` spending across all or mention users. `g_` modifier to split between groups instead of users. <br> Ex: `/add 10.3 @u1 @u2 Dinner`
-`/cancel <tx> [comment]`                   |  +  | Cancel `tx` transaction (see `/log`). <br> Ex: `/cancel 13 no surfing`
-`/compensate [comment]`                    |  +  | Register pay-off between all users.
+Command                                    | Type     | Description
+------------------------------------------ | -------- | ------------
+`/register`                                | User mgt | Register a user.
+`/join @user` / `/disjoin`                 | User mgt | Form a group of users. All transactions are split between users in one group. <br> Ex: `/join @u3`
+`/stat`                                    | Info     | Show current statistics.
+`/spent [<tx/date_from> [<tx/date_to>]]`   | Info     | Show logical spending between dates or transactions.
+`/spent c [<tx/date_from> [<tx/date_to>]]` | Info     | Show cash (real) spending between dates or transactions.
+`/log [@user or me] [num_tx]`              | Info     | Show last `num_tx` transactions (must be positive integer number, default: 10) for a given @user, self (`me`), or all if omitted. <br> Ex: `/log me 10`.
+`/payment`                                 | Info     | Show pay-offs.
+`/add <value> [@user...] [comment]`        | Action   | Register `value` spending across all or mentioned users. <br> Ex: `/add 10.3 @u1 @u2 Dinner`
+`/g_add <value> [@user...] [comment]`      | Action   | Register `value` spending across groups of all or mentioned users. <br> Ex: `/g_add 10.3 @u1 @u2 House`
+`/cancel <tx> [comment]`                   | Action   | Cancel `tx` transaction (see `/log`). <br> Ex: `/cancel 13 no surfing`
+`/compensate [comment]`                    | Action   | Register pay-off between all users.
 
 ## Model
 
