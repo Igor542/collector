@@ -26,8 +26,6 @@ class BotManager:
             'register',
             'join',
             'disjoin',
-            'ack',
-            'nack',
             'stat',
             'spent',
             'log',

@@ -87,7 +87,7 @@ class TFinance:
         return Ok(ret)
 
     def spent(self, user_id, is_cash, tx_range, date_range):
-        print(f'@@@ spent({user_id}, {is_cash}, {tx_range}, {date_range}')
+        print(f'@@@ spent({user_id}, {is_cash}, {tx_range}, {date_range})')
 
         if date_range:
             if tx_range:
@@ -204,6 +204,8 @@ class TFinance:
         groups = {user_gid: [user_id]}
         for uid in other_user_ids:
             gid = self.db.get_user_group(uid).unpack()
+            # FIXME: a shortcut, assumes that user_id from their group pays.
+            #        This, however, is not true for other groups (misalignment).
             if gid == user_gid: continue
             if gid not in groups: groups[gid] = []
             groups[gid].append(uid)
@@ -215,6 +217,9 @@ class TFinance:
         for gid, user_ids in groups.items():
             this_group_size = len(user_ids)
             if gid == user_gid:
+                # FIXME: see comment above. Ideally should also be:
+                #        this_value = - value_per_group / this_group_size
+                #                     + (value if user == user_id else 0)
                 this_value = value - value_per_group
             else:
                 this_value = -value_per_group / this_group_size
@@ -231,7 +236,7 @@ class TFinance:
         if not tx_info:
             return Error(STATUS.LOGIC_ERROR,
                          f'transaction ({tx}) does not exist')
-        # FIXME: temporary fix, remove False later
+        # FIXME: temporary fix, remove False later (or add `ack`)
         if False and tx_info.user != user_id:
             return Error(
                 STATUS.LOGIC_ERROR,
@@ -253,10 +258,8 @@ class TFinance:
 
         comment = 'compensate' + ('. ' + comment if comment else '')
         tx_id = self.db.add_transaction(user_id, 0, comment)
-        if tx_id.bad():
-            return tx_id
-        else:
-            tx_id = tx_id.unpack()
+        if tx_id.bad(): return tx_id
+        tx_id = tx_id.unpack()
 
         user_ids = self.db.get_all_users()
         if user_ids.bad(): return user_ids
