@@ -330,6 +330,23 @@ class Bot:
         self.__reply_respond(update, respond)
 
     @log_info
+    def e_add(self, update, context):
+
+        def usage(update):
+            self.__reply(update, 'usage: /e_add <value> @user[...] [comment]')
+
+        if len(context.args) < 2: return usage(update)
+
+        value = context.args[0]
+        sender_id = self.__get_sender_id(update)
+        mentioned_ids = self.__get_mentioned_ids(update)
+        comment_start = Bot.find_comment_start_pos(update.message.text)
+        lcomment = context.args[comment_start:]
+        respond = self.backend.e_add(sender_id, float(value), mentioned_ids,
+                                     ' '.join(lcomment))
+        self.__reply_respond(update, respond)
+
+    @log_info
     def add(self, update, context):
 
         def usage(update):

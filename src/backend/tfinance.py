@@ -188,6 +188,32 @@ class TFinance:
 
         return Ok()
 
+    def e_add(self, user_id, value, other_user_ids, comment=None):
+        if not other_user_ids:
+            return Error(
+                STATUS.LOGIC_ERROR,
+                'there must be users for whom the transaction is made')
+
+        r = self.__check_registered(user_id, other_user_ids)
+        if r.bad(): return r
+
+        other_user_ids = set(other_user_ids)
+        if user_id in other_user_ids:
+            return Error(
+                STATUS.LOGIC_ERROR,
+                f'"%{user_id}%" should not be in the list of other users')
+
+        n_users = len(other_user_ids)
+        value_per_user = 1. * value / n_users
+
+        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
+
+        self.db.add_count(tx_id, user_id, value)
+        for uid in other_user_ids:
+            self.db.add_count(tx_id, uid, -value_per_user)
+
+        return Ok()
+
     def g_add(self, user_id, value, other_user_ids=None, comment=None):
         r = self.__check_registered(user_id, other_user_ids)
         if r.bad(): return r

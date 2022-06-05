@@ -14,6 +14,7 @@ Command                                    | Type     | Description
 `/log [@user or me] [num_tx]`              | Info     | Show last `num_tx` transactions (must be positive integer number, default: 10) for a given @user, self (`me`), or all if omitted. <br> Ex: `/log me 10`.
 `/payment`                                 | Info     | Show pay-offs.
 `/add <value> [@user...] [comment]`        | Action   | Register `value` spending across all or mentioned users. <br> Ex: `/add 10.3 @u1 @u2 Dinner`
+`/e_add <value> @user[...] [comment]`      | Action   | Register `value` spending across mentioned users (excluding self). <br> Ex: `/e_add 10.3 @u2 Lunch (u1 pays for u2)`
 `/g_add <value> [@user...] [comment]`      | Action   | Register `value` spending across groups of all or mentioned users. <br> Ex: `/g_add 10.3 @u1 @u2 House`
 `/cancel <tx> [comment]`                   | Action   | Cancel `tx` transaction (see `/log`). <br> Ex: `/cancel 13 no surfing`
 `/compensate [comment]`                    | Action   | Register pay-off between all users.
