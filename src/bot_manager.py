@@ -31,6 +31,7 @@ class BotManager:
             'log',
             'payment',
             'g_add',
+            'e_add',
             'add',
             'cancel',
             'compensate',

@@ -112,7 +112,52 @@ def test3():
     assert res[1] == 50 and res[2] == -50 and res[3] == 0
 
 
+def test4():
+    t = gen_tf('test_tf_4.db')
+
+    # Create a group of 3 users
+    assert t.register(1).ok()
+    assert t.register(2).ok()
+    assert t.register(3).ok()
+
+    assert t.e_add(1, 20, [], 'e_add must have non-empty others').bad()
+    assert t.e_add(1, 20, [1, 2, 3],
+                   'e_add should not include user_id in others').bad()
+
+    assert t.add(1, 100, [2], 'tr between 1 and 2').ok()
+    assert t.e_add(1, 20, [2, 3], 'tr between 2 and 3, where 1 pays').ok()
+
+    res = t.stat(1).unpack()
+    assert res[1] == (100 - 50) + (20 - 0), f'res[1] = {res[1]}'
+    assert res[2] == (-50) + (-10)
+    assert res[3] == (-10)
+
+    res = t.payment(1).unpack()
+    assert len(res) == 2
+    if True:
+        p1, p2 = res[0], res[1]
+        if p1.src == 3 and p2.src == 2: p1, p2 = p2, p1
+        assert p1.src == 2 and p1.dst == 1 and p1.value == 60
+        assert p2.src == 3 and p2.dst == 1 and p2.value == 10
+
+    res = t.spent(1, True, None, None).unpack()
+    assert res[1] == 120 and res[2] == 0 and res[3] == 0
+
+    res = t.spent(1, False, None, None).unpack()
+    assert res[1] == 50 and res[2] == 60 and res[3] == 10
+
+    assert t.cancel(1, 1, 'revert "tr between 1 and 2"').ok()
+    res = t.stat(1).unpack()
+    assert res[1] == 20 and res[2] == -10 and res[3] == -10
+
+    assert t.cancel(1, 3, 'cancel revert').ok()
+    assert t.cancel(1, 2, 'cancel tr between 2 and 3, where 1 pays').ok()
+    res = t.stat(1).unpack()
+    assert res[1] == 50 and res[2] == -50 and res[3] == 0
+
+
 if __name__ == '__main__':
     test1()
     test2()
     test3()
+    test4()
