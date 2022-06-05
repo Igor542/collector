@@ -87,7 +87,7 @@ class TFinance:
         return Ok(ret)
 
     def spent(self, user_id, is_cash, tx_range, date_range):
-        print(f'@@@ spent({user_id}, {is_cash}, {tx_range}, {date_range}')
+        print(f'@@@ spent({user_id}, {is_cash}, {tx_range}, {date_range})')
 
         if date_range:
             if tx_range:
@@ -186,7 +186,33 @@ class TFinance:
             this_value = -value_per_user + (value if uid == user_id else 0)
             self.db.add_count(tx_id, uid, this_value)
 
-        return Ok()
+        return Ok(f'tx: {tx_id}')
+
+    def e_add(self, user_id, value, other_user_ids, comment=None):
+        if not other_user_ids:
+            return Error(
+                STATUS.LOGIC_ERROR,
+                'there must be users for whom the transaction is made')
+
+        r = self.__check_registered(user_id, other_user_ids)
+        if r.bad(): return r
+
+        other_user_ids = set(other_user_ids)
+        if user_id in other_user_ids:
+            return Error(
+                STATUS.LOGIC_ERROR,
+                f'"%{user_id}%" should not be in the list of other users')
+
+        n_users = len(other_user_ids)
+        value_per_user = 1. * value / n_users
+
+        tx_id = self.db.add_transaction(user_id, value, comment).unpack()
+
+        self.db.add_count(tx_id, user_id, value)
+        for uid in other_user_ids:
+            self.db.add_count(tx_id, uid, -value_per_user)
+
+        return Ok(f'tx: {tx_id}')
 
     def g_add(self, user_id, value, other_user_ids=None, comment=None):
         r = self.__check_registered(user_id, other_user_ids)
@@ -204,6 +230,8 @@ class TFinance:
         groups = {user_gid: [user_id]}
         for uid in other_user_ids:
             gid = self.db.get_user_group(uid).unpack()
+            # FIXME: a shortcut, assumes that user_id from their group pays.
+            #        This, however, is not true for other groups (misalignment).
             if gid == user_gid: continue
             if gid not in groups: groups[gid] = []
             groups[gid].append(uid)
@@ -215,13 +243,16 @@ class TFinance:
         for gid, user_ids in groups.items():
             this_group_size = len(user_ids)
             if gid == user_gid:
+                # FIXME: see comment above. Ideally should also be:
+                #        this_value = - value_per_group / this_group_size
+                #                     + (value if user == user_id else 0)
                 this_value = value - value_per_group
             else:
                 this_value = -value_per_group / this_group_size
             for uid in user_ids:
                 self.db.add_count(tx_id, uid, this_value)
 
-        return Ok()
+        return Ok(f'tx: {tx_id}')
 
     def cancel(self, user_id, tx, comment=None):
         r = self.__check_registered(user_id)
@@ -231,7 +262,7 @@ class TFinance:
         if not tx_info:
             return Error(STATUS.LOGIC_ERROR,
                          f'transaction ({tx}) does not exist')
-        # FIXME: temporary fix, remove False later
+        # FIXME: temporary fix, remove False later (or add `ack`)
         if False and tx_info.user != user_id:
             return Error(
                 STATUS.LOGIC_ERROR,
@@ -245,7 +276,7 @@ class TFinance:
 
         self.db.add_counts_with_inverse_values(tx, new_tx_id).unpack()
 
-        return Ok()
+        return Ok(f'tx: {new_tx_id}')
 
     def compensate(self, user_id, comment=None):
         r = self.__check_registered(user_id)
@@ -253,10 +284,8 @@ class TFinance:
 
         comment = 'compensate' + ('. ' + comment if comment else '')
         tx_id = self.db.add_transaction(user_id, 0, comment)
-        if tx_id.bad():
-            return tx_id
-        else:
-            tx_id = tx_id.unpack()
+        if tx_id.bad(): return tx_id
+        tx_id = tx_id.unpack()
 
         user_ids = self.db.get_all_users()
         if user_ids.bad(): return user_ids
@@ -264,4 +293,4 @@ class TFinance:
             value = self.db.get_user_count_value(user_id)
             if value.bad(): return value
             self.db.add_count(tx_id, user_id, -value.unpack())
-        return Ok()
+        return Ok(f'tx: {tx_id}')

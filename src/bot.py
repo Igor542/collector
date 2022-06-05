@@ -66,7 +66,11 @@ class Bot:
         return 0
 
     def __reply_respond(self, update, respond):
-        if respond.ok(): return self.__reply(update, "success")
+        if respond.ok():
+            r = respond.unpack()
+            message = 'success' + (f'. {r}' if r else '')
+            return self.__reply(update, message)
+
         error = respond.error
         uids = re.findall("%\d+%", error)
         san_uids = ['@' + self.__users[int(uid[1:-1])] for uid in uids]
@@ -326,6 +330,23 @@ class Bot:
         comment_start = Bot.find_comment_start_pos(update.message.text)
         lcomment = context.args[comment_start:]
         respond = self.backend.g_add(sender_id, float(value), mentioned_ids,
+                                     ' '.join(lcomment))
+        self.__reply_respond(update, respond)
+
+    @log_info
+    def e_add(self, update, context):
+
+        def usage(update):
+            self.__reply(update, 'usage: /e_add <value> @user[...] [comment]')
+
+        if len(context.args) < 2: return usage(update)
+
+        value = context.args[0]
+        sender_id = self.__get_sender_id(update)
+        mentioned_ids = self.__get_mentioned_ids(update)
+        comment_start = Bot.find_comment_start_pos(update.message.text)
+        lcomment = context.args[comment_start:]
+        respond = self.backend.e_add(sender_id, float(value), mentioned_ids,
                                      ' '.join(lcomment))
         self.__reply_respond(update, respond)
 
