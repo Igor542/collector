@@ -66,7 +66,11 @@ class Bot:
         return 0
 
     def __reply_respond(self, update, respond):
-        if respond.ok(): return self.__reply(update, "success")
+        if respond.ok():
+            r = respond.unpack()
+            message = 'success' + (f'. {r}' if r else '')
+            return self.__reply(update, message)
+
         error = respond.error
         uids = re.findall("%\d+%", error)
         san_uids = ['@' + self.__users[int(uid[1:-1])] for uid in uids]
