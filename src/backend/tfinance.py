@@ -186,7 +186,7 @@ class TFinance:
             this_value = -value_per_user + (value if uid == user_id else 0)
             self.db.add_count(tx_id, uid, this_value)
 
-        return Ok()
+        return Ok(f'tx: {tx_id}')
 
     def e_add(self, user_id, value, other_user_ids, comment=None):
         if not other_user_ids:
@@ -212,7 +212,7 @@ class TFinance:
         for uid in other_user_ids:
             self.db.add_count(tx_id, uid, -value_per_user)
 
-        return Ok()
+        return Ok(f'tx: {tx_id}')
 
     def g_add(self, user_id, value, other_user_ids=None, comment=None):
         r = self.__check_registered(user_id, other_user_ids)
@@ -252,7 +252,7 @@ class TFinance:
             for uid in user_ids:
                 self.db.add_count(tx_id, uid, this_value)
 
-        return Ok()
+        return Ok(f'tx: {tx_id}')
 
     def cancel(self, user_id, tx, comment=None):
         r = self.__check_registered(user_id)
@@ -276,7 +276,7 @@ class TFinance:
 
         self.db.add_counts_with_inverse_values(tx, new_tx_id).unpack()
 
-        return Ok()
+        return Ok(f'tx: {new_tx_id}')
 
     def compensate(self, user_id, comment=None):
         r = self.__check_registered(user_id)
@@ -293,4 +293,4 @@ class TFinance:
             value = self.db.get_user_count_value(user_id)
             if value.bad(): return value
             self.db.add_count(tx_id, user_id, -value.unpack())
-        return Ok()
+        return Ok(f'tx: {tx_id}')
