@@ -70,6 +70,7 @@ class DB:
         self.__cur = self.__con.cursor()
         self.__ready = True
         self.__create_tables()
+        self.__con.commit()
         return Ok()
 
     def close(self):
@@ -116,6 +117,7 @@ class DB:
         INSERT INTO Users VALUES ({uid}, {gid})
         """
         self.cur.execute(req)
+        self.__con.commit()
         return Ok()
 
     def set_user_group(self, uid, gid):
@@ -123,6 +125,7 @@ class DB:
         UPDATE Users SET gid = {gid} WHERE uid = {uid}
         """
         self.cur.execute(req)
+        self.__con.commit()
         return Ok()
 
     # Groups
@@ -132,6 +135,7 @@ class DB:
         INSERT Into Groups VALUES (NULL)
         """
         self.cur.execute(req)
+        self.__con.commit()
         return Ok(self.cur.lastrowid)
 
     def get_group_users(self, gid):
@@ -160,6 +164,7 @@ class DB:
         VALUES (NULL, CURRENT_TIMESTAMP, {source_id}, {value}, {sql_decorator(comment)})
         """
         self.cur.execute(req)
+        self.__con.commit()
         return Ok(self.cur.lastrowid)
 
     def get_last_transaction_ids(self, user_id, count):
@@ -224,6 +229,7 @@ class DB:
         INSERT INTO Counts VALUES ({tx_id}, {user_id}, {value})
         """
         self.cur.execute(req)
+        self.__con.commit()
         return Ok()
 
     def get_counts(self, tx_id):
@@ -252,4 +258,5 @@ class DB:
             INSERT INTO Counts VALUES ({new_tx}, {count.user}, {-count.value})
             """
             self.cur.execute(req)
+        self.__con.commit()
         return Ok()
